@@ -1,0 +1,50 @@
+import { Schema, model } from "mongoose";
+import { isActive, IUser, Role } from "./user.interface";
+
+const UserSchema = new Schema<IUser>(
+  {
+    name: { type: String, required: true },
+
+    email: { type: String, required: true, unique: true },
+
+    password: { type: String, required: true },
+
+    role: {
+      type: String,
+      enum: Role,
+      default: Role.USER,
+    },
+
+    profileImage: { type: String, default: "" },
+
+    bio: { type: String, default: "" },
+
+    interests: { type: [String], default: [] },
+
+    visitedCountries: { type: [String], default: [] },
+
+    currentLocation: { type: String, default: "" },
+
+    isActive: { type: String, enum: isActive, default: isActive.ACTIVE },
+
+
+    plans: [{ type: Schema.Types.ObjectId, ref: "TravelPlan" , default: [] }],
+
+    reviewsReceived: [{ type: Schema.Types.ObjectId, ref: "Review" , default: [] }],
+
+    reviewsWritten: [{ type: Schema.Types.ObjectId, ref: "Review" , default: [] }],
+
+
+    subscription: {
+      subscriptionId : {type : Schema.Types.ObjectId, ref : "Subscription", default: ""},
+      isPremium: { type: Boolean, default: false },
+      expiresAt: { type: Date, default: null },
+    },
+  },
+  {
+    timestamps: true, 
+    versionKey: false,
+  }
+);
+
+export const User = model<IUser>("User", UserSchema);
