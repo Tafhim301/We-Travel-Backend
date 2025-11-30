@@ -17,6 +17,8 @@ export interface IPayment {
   currency: string;
   transactionId: string;
   paymentStatus: PaymentStatus;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  paymentGatewayData ?: any;
   subscriptionType: SubscriptionType;
   expiresAt: Date;
 }

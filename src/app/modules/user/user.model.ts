@@ -11,7 +11,7 @@ const UserSchema = new Schema<IUser>(
 
     role: {
       type: String,
-      enum: Role,
+      enum: Object.values(Role),
       default: Role.USER,
     },
 
@@ -25,7 +25,7 @@ const UserSchema = new Schema<IUser>(
 
     currentLocation: { type: String, default: "" },
 
-    isActive: { type: String, enum: isActive, default: isActive.ACTIVE },
+    isActive: { type: String, enum: Object.values(isActive), default: isActive.ACTIVE },
 
 
     plans: [{ type: Schema.Types.ObjectId, ref: "TravelPlan" , default: [] }],

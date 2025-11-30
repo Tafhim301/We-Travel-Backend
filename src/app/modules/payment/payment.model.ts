@@ -9,12 +9,12 @@ const PaymentSchema = new Schema<IPayment>(
     transactionId: { type: String, required: true, unique: true },
     paymentStatus: {
       type: String,
-      enum: PaymentStatus,
+      enum: Object.values(PaymentStatus),
       default: PaymentStatus.PENDING,
     },
     subscriptionType: {
       type: String,
-      enum: SubscriptionType,
+      enum: Object.values(SubscriptionType),
       required: true,
     },
     expiresAt: { type: Date, required: true },

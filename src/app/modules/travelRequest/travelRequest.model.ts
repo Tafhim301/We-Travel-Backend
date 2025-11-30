@@ -9,7 +9,7 @@ const TravelRequestSchema = new Schema<ITravelRequest>(
 
     status: {
       type: String,
-      enum: TravelRequestStatus,
+      enum: Object.values(TravelRequestStatus),
       default: TravelRequestStatus.PENDING,
     },
     message: { type: String },
