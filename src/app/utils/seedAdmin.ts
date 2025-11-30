@@ -5,7 +5,7 @@ import { IUser, Role } from "../modules/user/user.interface";
 
 export const seedAdmin = async () => {
     try {
-        const Admin = await User.findOne({ email: envVars.ADMIN_email })
+        const Admin = await User.findOne({ email: envVars.ADMIN_EMAIL })
 
         if (Admin) {
             console.log("Admin already exists");
@@ -17,7 +17,7 @@ export const seedAdmin = async () => {
         const payload: IUser = {
             name: "Admin",
             role: Role.ADMIN,
-            email: envVars.ADMIN_email,
+            email: envVars.ADMIN_EMAIL,
             password: hashedPassword,
 
 

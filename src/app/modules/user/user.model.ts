@@ -36,7 +36,7 @@ const UserSchema = new Schema<IUser>(
 
 
     subscription: {
-      subscriptionId : {type : Schema.Types.ObjectId, ref : "Subscription", default: ""},
+      subscriptionId : {type : Schema.Types.ObjectId, ref : "Subscription", default: null},
       isPremium: { type: Boolean, default: false },
       expiresAt: { type: Date, default: null },
     },
