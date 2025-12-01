@@ -6,6 +6,7 @@ import { locationRoutes } from "../modules/location/location.routes";
 import { paymentRoutes } from "../modules/payment/payment.routes";
 import { reviewRoutes } from "../modules/review/review.routes";
 import { travelPlanRoutes } from "../modules/TravelPlan/travelPlan.routes";
+import { interestRoutes } from "../modules/interests/interests.routes";
 
 
 export const router = Router();
@@ -39,7 +40,11 @@ const moduleRoutes = [
     {
          path : '/travel-plans',
          route : travelPlanRoutes
-    }
+    },
+    {
+         path : '/interests',
+         route : interestRoutes
+    },
     
     
 ];
