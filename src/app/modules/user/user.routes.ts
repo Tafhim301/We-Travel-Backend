@@ -4,12 +4,16 @@ import { createUserZodSchema, updateUserZodSchema } from "./user.validation";
 import { userController } from "./user.controller";
 import { checkAuth } from "../../middlewares/checkAuth";
 import { Role } from "./user.interface";
+import { multerUpload } from "../../config/multer.confiq";
+import { formDataParser } from "../../middlewares/formDataParser";
 
 const router = Router();
 
 router.post(
   "/register",
-  validateRequest(createUserZodSchema),
+  multerUpload.single("profileImage"), 
+  formDataParser,
+  validateRequest(createUserZodSchema), 
   userController.createUser
 );
 router.get(
@@ -27,8 +31,9 @@ router.get(
 router.patch(
   "/update",
   checkAuth(...Object.values(Role)),
+  multerUpload.single("profileImage"), 
+  formDataParser,
   validateRequest(updateUserZodSchema),
-
   userController.updateProfile
 );
 router.post(

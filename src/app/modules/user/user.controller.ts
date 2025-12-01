@@ -8,7 +8,7 @@ import { setAuthCookie } from "../../utils/setCookies";
 
 const createUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const result = await userServices.createUser(req.body);
+    const result: Awaited<ReturnType<typeof userServices.createUser>> = await userServices.createUser(req.body,req.file);
     setAuthCookie(res, result.accessToken);
     sendResponse(res, {
       success: true,
@@ -38,7 +38,7 @@ const updateProfile = catchAsync(
     const userId = req.user.userId;
     const payload = req.body
 
-    const result = await userServices.updateProfile(userId,payload);
+    const result = await userServices.updateProfile(userId,payload,req.file);
 
     sendResponse(res, {
       success: true,

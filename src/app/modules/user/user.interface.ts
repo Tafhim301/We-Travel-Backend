@@ -25,7 +25,10 @@ export interface IUser {
 
   role: Role;
 
-  profileImage?: string;   
+profileImage?: {
+    url?: string;
+    public_id?: string;
+  };  
   bio?: string;
   
   isActive?: isActive;

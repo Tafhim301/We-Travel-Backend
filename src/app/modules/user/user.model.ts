@@ -15,7 +15,10 @@ const UserSchema = new Schema<IUser>(
       default: Role.USER,
     },
 
-    profileImage: { type: String, default: "" },
+   profileImage: {
+  url: { type: String, default: "" },
+  public_id: { type: String, default: "" },
+  },
 
     bio: { type: String, default: "" },
 
