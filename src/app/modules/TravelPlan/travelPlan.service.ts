@@ -1,6 +1,4 @@
 /* eslint-disable @typescript-eslint/no-dynamic-delete */
-
-
 import { ITravelPlan } from "./travelPlan.interface";
 import { TravelPlan } from "./travelPlan.model";
 import { uploadBufferCloudinary } from "../../utils/cloudinaryUploader";
@@ -8,6 +6,8 @@ import AppError from "../../errorHandlers/appError";
 import { QueryBuilder } from "../../utils/queryBuilder";
 import mongoose from "mongoose";
 import { deleteFromCloudinaryByUrl } from "../../utils/cloudinaryDelete";
+import { TravelRequestStatus } from "../travelRequest/travelRequest.interface";
+import { TravelRequest } from "../travelRequest/travelRequest.model";
 
 interface TravelPlanFiles {
   image?: Express.Multer.File;
@@ -19,56 +19,91 @@ interface UpdateTravelPlanPayload extends Partial<ITravelPlan> {
   demoImages?: string[];
   removeImages?: string[];
 }
-
-const createTravelPlan = async (
+export const createTravelPlan = async (
   userId: string,
   payload: { body: Partial<ITravelPlan> },
   files?: TravelPlanFiles
 ) => {
-  let imageUrl = "";
-  const demoImagesUrl: string[] = [];
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
+  try {
+    let imageUrl = "";
+    const demoImagesUrl: string[] = [];
 
-  const today = new Date();
-  today.setHours(0,0,0,0);
+    // --- DATE VALIDATION ---
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-  if (payload.body.startDate) {
-    const start = new Date(payload.body.startDate);
-    if (start < today) {
-      throw new AppError(400, "Start Date cannot be earlier than today");
+    if (payload.body.startDate) {
+      const start = new Date(payload.body.startDate);
+      if (start < today) {
+        throw new AppError(400, "Start Date cannot be earlier than today");
+      }
     }
-  }
 
-  if (files?.image) {
-    const result = await uploadBufferCloudinary(
-      files.image.buffer,
-      files.image.originalname,
-      "travel-plans"
-    );
-    imageUrl = result.secure_url;
-  }
-
-  if (files?.demoImages?.length) {
-    for (const file of files.demoImages) {
+    // --- UPLOAD MAIN IMAGE ---
+    if (files?.image) {
       const result = await uploadBufferCloudinary(
-        file.buffer,
-        file.originalname,
-        "travel-plans/demos"
+        files.image.buffer,
+        files.image.originalname,
+        "travel-plans"
       );
-      demoImagesUrl.push(result.secure_url);
+      imageUrl = result.secure_url;
     }
+
+    // --- UPLOAD DEMO IMAGES ---
+    if (files?.demoImages?.length) {
+      for (const file of files.demoImages) {
+        const result = await uploadBufferCloudinary(
+          file.buffer,
+          file.originalname,
+          "travel-plans/demos"
+        );
+        demoImagesUrl.push(result.secure_url);
+      }
+    }
+
+    // --- CREATE TRAVEL PLAN ---
+    const travelPlan = await TravelPlan.create(
+      [
+        {
+          user: userId,
+          ...payload.body,
+          image: imageUrl,
+          demoImages: demoImagesUrl,
+          requestedBy: [userId], // creator becomes initial member
+        },
+      ],
+      { session }
+    );
+
+    const plan = travelPlan[0];
+
+    await TravelRequest.create(
+      [
+        {
+          travelPlan: plan._id,
+          requester: userId,
+          host: userId,
+          status: TravelRequestStatus.ACCEPTED,
+          message: "Creator automatically accepted into the plan",
+        },
+      ],
+      { session }
+    );
+
+    await session.commitTransaction();
+    session.endSession();
+
+    return plan;
+  } catch (error) {
+
+    await session.abortTransaction();
+    session.endSession();
+
+    throw error;
   }
-
-  
-  const travelPlan = await TravelPlan.create({
-    user: userId,
-    ...payload.body,
-    image: imageUrl,
-    demoImages: demoImagesUrl,
-    requestedBy: [userId],     
-  });
-
-  return travelPlan;
 };
 
 const getTravelPlans = async (query: Record<string, string>) => {
