@@ -38,7 +38,7 @@ const moduleRoutes = [
          route : reviewRoutes
     },
     {
-         path : '/travel-plans',
+         path : '/travelPlans',
          route : travelPlanRoutes
     },
     {

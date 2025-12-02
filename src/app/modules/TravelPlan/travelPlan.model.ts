@@ -4,7 +4,11 @@ import { ITravelPlan, TravelType } from "./travelPlan.interface";
 const TravelPlanSchema = new Schema<ITravelPlan>(
   {
     user: { type: Schema.Types.ObjectId, ref: "User", required: true }, 
-    destination: { type: String, required: true },
+    title: { type: String, required: true },
+    description: { type: String, required: true },
+    image: { type: String, required: true },
+    demoImages: { type: [String], default: [] },
+    destination: { type: Schema.Types.ObjectId, ref: "Location", required: true }, 
     startDate: { type: Date, required: true },
     endDate: { type: Date, required: true },
     budgetRange: {
