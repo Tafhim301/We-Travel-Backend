@@ -11,6 +11,7 @@ export const createTravelPlanSchema = z.object({
     itinerary: z.string(),
     travelType: z.enum(Object.values(TravelType) as [string, ...string[]]),
     visibility: z.boolean().optional(),
+    maxMembers: z.number().optional(),
 
     budgetRange: z.object({
       min: z.number(),

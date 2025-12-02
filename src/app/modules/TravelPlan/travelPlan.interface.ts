@@ -30,5 +30,6 @@ export interface ITravelPlan {
 
   members: Types.ObjectId[];   
   maxMembers: number;          
-  requestedBy: Types.ObjectId[];  
+  requestedBy: Types.ObjectId[];
+  approvedMembers: Types.ObjectId[];  
 }

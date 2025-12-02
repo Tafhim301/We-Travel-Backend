@@ -22,7 +22,10 @@ const TravelPlanSchema = new Schema<ITravelPlan>(
     },
     itinerary: { type: String, required: true },
     visibility: { type: Boolean, default: true },
-    requestedBy: [{ type: Types.ObjectId, ref: "User" }], 
+    requestedBy: [{ type: Types.ObjectId, ref: "User" }],
+    approvedMembers: [{ type: Types.ObjectId, ref: "User" }],
+ 
+    maxMembers: { type: Number, default: 10 }, 
   },
   { timestamps: true }
 );
