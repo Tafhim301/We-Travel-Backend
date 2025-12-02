@@ -32,7 +32,7 @@ router.patch(
     { name: "demoImages", maxCount: 10 },
   ]),
   
-
+  formDataParser,
   validateRequest(updateTravelPlanSchema),
   travelPlanController.updateTravelPlan
 );

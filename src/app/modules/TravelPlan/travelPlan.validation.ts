@@ -28,6 +28,7 @@ export const updateTravelPlanSchema = z.object({
     itinerary: z.string().optional(),
     travelType: z.enum(Object.values(TravelType) as [string, ...string[]]).optional(),
     visibility: z.boolean().optional(),
+    removeImages: z.array(z.string()).optional(),
     budgetRange: z.object({
       min: z.number().optional(),
       max: z.number().optional(),

@@ -7,6 +7,7 @@ import { sendResponse } from "../../utils/sendResponse";
 const createTravelPlan = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user.userId;
   const files = { image: req.file, demoImages: (req.files as Express.Multer.File[] | undefined) };
+
   const result = await travelPlanServices.createTravelPlan(userId, req.body, files);
 
   sendResponse(res, 
@@ -32,29 +33,44 @@ const getTravelPlanById = catchAsync(async (req: Request, res: Response) => {
 
 
 
-const updateTravelPlan = catchAsync(
-  async (req: Request, res: Response) => {
-    const planId = req.params.id;
-    const body = req.body.body
+const updateTravelPlan = catchAsync(async (req: Request, res: Response) => {
+  const planId = req.params.id;
 
- 
+  const body = req.body.body;
+
+  interface TravelPlanFiles {
+  image?: Express.Multer.File;
+  demoImages?: Express.Multer.File[];
+}
 
 
-    // const files = {
-    //   image: req.files?.["image"] as Express.Multer.File ,
-    //   demoImages: req.files?.["demoImages"] as Express.Multer.File[] | undefined,
-    // };
 
-    const updatedPlan = await travelPlanServices.updateTravelPlan(planId, body);
+const files: TravelPlanFiles = {
+  image: Array.isArray(req.files)
+    ? undefined
+    : req.files?.image?.[0],
 
-    sendResponse(res, {
-      success: true,
-      statusCode: 200,
-      message: "Travel plan updated successfully",
-      data: updatedPlan,
-    });
-  }
-);
+  demoImages: Array.isArray(req.files)
+    ? []
+    : (req.files?.demoImages ?? []),
+};
+
+
+
+
+  const updatedPlan = await travelPlanServices.updateTravelPlan(planId, body, files);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Travel plan updated successfully",
+    data: {
+      updatedPlan: updatedPlan.updatedPlan,
+      message: updatedPlan.message,
+    }
+  });
+});
+
 
 
 

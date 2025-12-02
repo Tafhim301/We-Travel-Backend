@@ -8,7 +8,7 @@ export const formDataParser = (
 ) => {
   if (req.body && typeof req.body.data === "string") {
     try {
-      req.body = JSON.parse(req.body.data); // JSON string → object
+      req.body = JSON.parse(req.body.data);
     } catch (err) {
       return res.status(400).json({ message: "Invalid JSON in 'data' field" });
     }

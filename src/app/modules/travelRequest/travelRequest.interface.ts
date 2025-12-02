@@ -1,9 +1,9 @@
 import { Types } from "mongoose";
 
 export enum TravelRequestStatus {
-  PENDING = "pending",
-  ACCEPTED = "accepted",
-  REJECTED = "rejected",
+  PENDING = "PENDING",
+  ACCEPTED = "ACCEPTED",
+  REJECTED = "REJECTED",
 }
 
 export interface ITravelRequest {
