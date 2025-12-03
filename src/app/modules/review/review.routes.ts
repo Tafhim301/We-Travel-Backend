@@ -19,5 +19,5 @@ import { Role } from '../user/user.interface';
   router.get('/check/:travelPlanId', checkAuth(...Object.values(Role)), reviewControllers.checkIfUserHasReviewedTravel);
   router.get('/validate-eligibility', checkAuth(...Object.values(Role)), reviewControllers.validateReviewEligibility);
   
-  export default router;
+export const reviewRoutes = router;
  

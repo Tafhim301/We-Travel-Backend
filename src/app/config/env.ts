@@ -13,6 +13,8 @@ interface EnvConfig {
   BCRYPT_SALT_ROUND: number;
   ADMIN_EMAIL: string;
   ADMIN_PASSWORD: string;
+  MONTHLY_SUBSCRIPTION_PRICE: string;
+  YEARLY_SUBSCRIPTION_PRICE: string;
   FRONTEND_URL: string;
     SSL: {
     STORE_ID: string;
@@ -59,6 +61,8 @@ const loadEnvVariables = (): EnvConfig => {
     "CLOUDINARY_CLOUD_NAME",
     "CLOUDINARY_API_KEY",
     "CLOUDINARY_API_SECRET",
+    "MONTHLY_SUBSCRIPTION_PRICE",
+    "YEARLY_SUBSCRIPTION_PRICE",
   ];
   requiredEnvVAriables.forEach((key) => {
     if (!process.env[key]) {
@@ -78,6 +82,8 @@ const loadEnvVariables = (): EnvConfig => {
     ADMIN_EMAIL: process.env.ADMIN_EMAIL as string,
     ADMIN_PASSWORD: process.env.ADMIN_PASSWORD as string,
     FRONTEND_URL: process.env.FRONTEND_URL as string,
+    MONTHLY_SUBSCRIPTION_PRICE: process.env.MONTHLY_SUBSCRIPTION_PRICE as string,
+    YEARLY_SUBSCRIPTION_PRICE: process.env.YEARLY_SUBSCRIPTION_PRICE as string,
       SSL: {
       STORE_ID: process.env.SSL_STORE_ID as string,
       STORE_PASS: process.env.SSL_STORE_PASS as string,
