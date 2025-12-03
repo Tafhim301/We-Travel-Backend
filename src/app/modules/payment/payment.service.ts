@@ -73,9 +73,9 @@ const initPayment = async (
             total_amount: amount,
             currency: "BDT",
             tran_id: transactionId,
-            success_url: envVars.SSL.SSL_SUCCESS_BACKEND_URL,
-            fail_url: envVars.SSL.SSL_FAIL_BACKEND_URL,
-            cancel_url: envVars.SSL.SSL_CANCEL_BACKEND_URL,
+            success_url: envVars.SSL.SSL_SUCCESS_FRONTEND_URL,
+            fail_url: envVars.SSL.SSL_FAIL_FRONTEND_URL,
+            cancel_url: envVars.SSL.SSL_CANCEL_FRONTEND_URL,
             ipn_url: envVars.SSL.SSL_IPN_URL,
             cus_name: user.name,
             cus_email: user.email,
@@ -239,11 +239,7 @@ const handlePaymentCancellation = async (
         );
     }
 
-    
-
     const payment = await Payment.findOne({ transactionId });
-
-   
     if (!payment) {
         throw new AppError(
             httpStatus.NOT_FOUND,
@@ -252,9 +248,9 @@ const handlePaymentCancellation = async (
     }
 
     if (payment.paymentStatus === PaymentStatus.PENDING) {
-        payment.paymentStatus = PaymentStatus.CANCELLED;
+        payment.paymentStatus = PaymentStatus.CANCELED;
         payment.paymentGatewayData = {
-            status: "CANCELLED",
+            status: "CANCELED",
             timestamp: new Date().toISOString(),
         } as Record<string, string>;
         await payment.save();
@@ -302,86 +298,98 @@ const handlePaymentFailure = async (
  * This is called in real-time by SSLCommerz when payment status changes
  */
 const handleIPNCallback = async (
-    ipnData: Record<string, string>
+  ipnData: Record<string, string>
 ): Promise<{ success: boolean; message: string }> => {
-    const transactionId = ipnData.tran_id;
-    const status = ipnData.status;
+  const transactionId = ipnData.tran_id;
+  const status = ipnData.status;
 
-    if (!transactionId || !status) {
-        throw new AppError(400, "Invalid IPN data: missing tran_id or status");
-    }
+  if (!transactionId || !status) {
+    throw new AppError(400, "Invalid IPN data: missing tran_id or status");
+  }
 
-    const payment = await Payment.findOne({ transactionId });
-    if (!payment) {
-        throw new AppError(404, "Payment not found for IPN callback");
-    }
+  const payment = await Payment.findOne({ transactionId });
+  if (!payment) {
+    throw new AppError(404, "Payment not found for IPN callback");
+  }
 
-    // Only process if payment is still pending
-    if (payment.paymentStatus !== PaymentStatus.PENDING) {
-        return {
-            success: true,
-            message: "Payment already processed",
-        };
-    }
+  // Only process if payment is still pending
+  if (payment.paymentStatus !== PaymentStatus.PENDING) {
+    return {
+      success: true,
+      message: "Payment already processed",
+    };
+  }
 
-    const session = await mongoose.startSession();
-    session.startTransaction();
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
+  try {
+    // Validate payment with SSLCommerz API
+    const validationParams = {
+      val_id: ipnData.val_id,
+      store_id: envVars.SSL.STORE_ID,
+      store_passwd: envVars.SSL.STORE_PASS,
+    };
+
+    let validationResponse;
     try {
-        if (status === "VALID" || status === "VALIDATED") {
-            // Update payment to success
-            payment.paymentStatus = PaymentStatus.SUCCESS;
-            payment.paymentGatewayData = ipnData;
-            await payment.save({ session });
-
-            // Update user subscription
-            const user = await User.findById(payment.user).session(session);
-            if (!user) {
-                throw new AppError(404, "User not found");
-            }
-
-            const now = new Date();
-            const oldExpiry = user?.subscription?.expiresAt && new Date(user.subscription.expiresAt) > now
-                ? new Date(user.subscription.expiresAt)
-                : now;
-
-            const newExpiry = new Date(oldExpiry);
-            if (payment.subscriptionType === SubscriptionType.MONTHLY) {
-                newExpiry.setMonth(newExpiry.getMonth() + 1);
-            } else {
-                newExpiry.setFullYear(newExpiry.getFullYear() + 1);
-            }
-
-            user.subscription = {
-                subscriptionId: payment._id.toString(),
-                isPremium: true,
-                expiresAt: newExpiry,
-            };
-
-            await user.save({ session });
-        } else if (status === "FAILED") {
-            payment.paymentStatus = PaymentStatus.FAILED;
-            payment.paymentGatewayData = ipnData;
-            await payment.save({ session });
-        } else {
-            // Unknown status
-            payment.paymentStatus = PaymentStatus.FAILED;
-            payment.paymentGatewayData = ipnData;
-            await payment.save({ session });
-        }
-
-        await session.commitTransaction();
-        session.endSession();
-
-        return {
-            success: true,
-            message: `Payment ${status} processed successfully`,
-        };
-    } catch (error) {
-        await session.abortTransaction();
-        session.endSession();
-        throw error;
+      validationResponse = await axios.get(envVars.SSL.SSL_VALIDATION_API, { params: validationParams });
+    } catch (err) {
+      throw new AppError(500, "Failed to validate payment with SSLCommerz");
     }
+
+    const v = validationResponse.data;
+
+    if (["VALID", "VALIDATED"].includes(v.status) && Number(v.amount) === payment.amount && v.tran_id === transactionId) {
+      // Payment is valid, update as SUCCESS
+      payment.paymentStatus = PaymentStatus.SUCCESS;
+      payment.paymentGatewayData = v;
+      await payment.save({ session });
+
+      // Update user subscription
+      const user = await User.findById(payment.user).session(session);
+      if (!user) throw new AppError(404, "User not found");
+
+      const now = new Date();
+      const oldExpiry = user?.subscription?.expiresAt && new Date(user.subscription.expiresAt) > now
+        ? new Date(user.subscription.expiresAt)
+        : now;
+
+      const newExpiry = new Date(oldExpiry);
+      if (payment.subscriptionType === SubscriptionType.MONTHLY) {
+        newExpiry.setMonth(newExpiry.getMonth() + 1);
+      } else {
+        newExpiry.setFullYear(newExpiry.getFullYear() + 1);
+      }
+
+      user.subscription = {
+        subscriptionId: payment._id.toString(),
+        isPremium: true,
+        expiresAt: newExpiry,
+      };
+
+      await user.save({ session });
+
+      await session.commitTransaction();
+      session.endSession();
+
+      return { success: true, message: "Payment verified and subscription updated" };
+    } else {
+      // Payment invalid, mark as FAILED
+      payment.paymentStatus = PaymentStatus.FAILED;
+      payment.paymentGatewayData = v;
+      await payment.save({ session });
+
+      await session.commitTransaction();
+      session.endSession();
+
+      return { success: false, message: `Payment verification failed: ${v.status}` };
+    }
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    throw error;
+  }
 };
 
 const getPaymentHistory = async (

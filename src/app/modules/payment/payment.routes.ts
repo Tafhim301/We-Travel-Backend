@@ -5,7 +5,6 @@ import { Role } from "../user/user.interface";
 
 const router = Router();
 
-// IPN Callback - MUST be before other routes (real-time payment updates)
 router.post(
     "/ipn",
     paymentControllers.handleIPN
@@ -18,9 +17,9 @@ router.post(
     paymentControllers.initPayment
 );
 
-// Verify Payment
+
 router.post(
-    "/verify",
+    "/validate-payment",
     paymentControllers.verifyPayment
 );
 
@@ -31,6 +30,7 @@ router.get(
     paymentControllers.getPaymentHistory
 );
 
+// Subscription Endpoints (Protected) - MUST be before generic /:paymentId
 router.get(
     "/subscription/status",
     checkAuth(Role.USER),
@@ -65,7 +65,7 @@ router.get(
     paymentControllers.getPaymentById
 );
 
-// Get Payment by Transaction ID
+
 router.get(
     "/transaction/:transactionId",
     paymentControllers.getPaymentByTransactionId

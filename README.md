@@ -1002,15 +1002,585 @@ npm install --legacy-peer-deps
 
 ---
 
+## 💳 Payment Integration (SSLCommerz)
+
+### Overview
+The We-Travel platform integrates with **SSLCommerz**, Bangladesh's leading payment gateway, enabling secure subscription payments with real-time status updates.
+
+### Payment Flow
+
+```
+User Initiates Payment
+    ↓
+Generate Transaction ID & Payment Record (PENDING)
+    ↓
+Call SSLCommerz Gateway API
+    ↓
+Redirect User to SSLCommerz Payment Page
+    ↓
+User Completes/Cancels Payment
+    ↓
+SSLCommerz Callbacks (IPN + Redirect)
+    ↓
+Update Payment Status
+    ↓
+Update User Subscription (Atomic Transaction)
+    ↓
+Redirect User to Success/Fail/Cancel Page
+```
+
+### Key Functions
+
+**1. Initialize Payment**
+```typescript
+POST /api/payments/init
+Authorization: Bearer {JWT}
+Content-Type: application/json
+
+Request:
+{
+  "subscriptionType": "monthly" | "yearly"
+}
+
+Response:
+{
+  "paymentUrl": "https://securepay.sslcommerz.com/...",
+  "transactionId": "TXN-1733212345678-abc123d"
+}
+```
+
+**2. Handle Success Callback**
+- Called when user completes payment on SSLCommerz
+- Updates payment status to SUCCESS
+- Activates user subscription (atomic transaction)
+- Calculates expiry date based on subscription type
+
+**3. IPN (Instant Payment Notification)**
+```
+SSLCommerz POST → /api/payments/ipn
+Real-time payment status update
+Processes immediately without user action
+```
+
+**4. Verify Payment Status**
+```typescript
+GET /api/payments/subscription/details
+Authorization: Bearer {JWT}
+
+Response:
+{
+  "hasActiveSubscription": true,
+  "subscriptionType": "monthly",
+  "expiresAt": "2025-01-03T12:00:00Z",
+  "daysRemaining": 31
+}
+```
+
+### Payment Status State Machine
+```
+┌─────────┐
+│ PENDING │
+└────┬────┘
+     │
+     ├─→ SUCCESS (Payment verified)
+     │      ↓
+     │   User Subscription Activated
+     │   expiresAt = current_date + duration
+     │
+     ├─→ FAILED (Payment rejected by bank)
+     │
+     └─→ CANCELLED (User cancelled payment)
+```
+
+### Security Features
+
+✅ **Atomic Transactions** - Payment status + user subscription update together
+✅ **Idempotent Operations** - Safe to retry failed operations
+✅ **Amount Verification** - Validates payment amount matches database
+✅ **Transaction ID Verification** - Ensures transaction matches SSLCommerz report
+✅ **User Isolation** - Users access only own payment history
+✅ **Protected Routes** - Payment endpoints require JWT authentication
+
+### Environment Configuration
+
+```env
+# SSLCommerz Credentials
+SSL_STORE_ID=your_store_id
+SSL_STORE_PASS=your_store_password
+SSL_PAYMENT_API=https://securepay.sslcommerz.com/gwprocess/v4/api.php
+SSL_VALIDATION_API=https://securepay.sslcommerz.com/validator/api/validationAPI.php
+
+# Callback URLs (what SSLCommerz calls)
+SSL_SUCCESS_BACKEND_URL=https://api.yourdomain.com/api/payments/success
+SSL_FAIL_BACKEND_URL=https://api.yourdomain.com/api/payments/fail
+SSL_CANCEL_BACKEND_URL=https://api.yourdomain.com/api/payments/cancel
+SSL_IPN_URL=https://api.yourdomain.com/api/payments/ipn
+
+# Frontend Redirect URLs (where user goes)
+SSL_SUCCESS_FRONTEND_URL=https://yourdomain.com/payment/success
+SSL_FAIL_FRONTEND_URL=https://yourdomain.com/payment/failed
+SSL_CANCEL_FRONTEND_URL=https://yourdomain.com/payment/cancelled
+
+# Subscription Prices (BDT)
+MONTHLY_SUBSCRIPTION_PRICE=299
+YEARLY_SUBSCRIPTION_PRICE=2999
+```
+
+### Testing Checklist
+
+- [ ] Payment initialization returns valid gateway URL
+- [ ] User redirected to SSLCommerz payment page
+- [ ] Payment completion updates status to SUCCESS
+- [ ] User subscription activated after payment
+- [ ] Subscription details show correct expiry date
+- [ ] Payment history displays transaction
+- [ ] Multiple payments work correctly
+- [ ] Cancellation updates status to CANCELLED
+- [ ] Failed payments update status to FAILED
+- [ ] IPN callback processes in real-time
+
+### Production Checklist
+
+- [ ] All environment variables configured
+- [ ] SSL certificates enabled (HTTPS required)
+- [ ] SSLCommerz production credentials obtained
+- [ ] Callback URLs accessible from internet
+- [ ] Database backups enabled
+- [ ] Error logging configured
+- [ ] Rate limiting implemented
+- [ ] Monitoring and alerts setup
+
+---
+
+## 📊 Admin & User Dashboards
+
+### Admin Dashboard Endpoints
+
+**1. Comprehensive Overview**
+```
+GET /api/stats/admin/overview
+```
+
+Returns all key business metrics including:
+- Total/Active/Premium users with percentages
+- Monthly vs Yearly subscription breakdown
+- Total/Successful/Pending/Failed/Cancelled payments
+- Total revenue
+- Best reviewed host
+- Top destinations
+
+**2. User Analytics**
+```
+GET /api/stats/admin/users
+Query Params: page, limit, search
+```
+
+User statistics with pagination including:
+- User breakdown by status (active/inactive/blocked)
+- User breakdown by role (admin/host/user)
+- Premium user percentage
+
+**3. Payment Analytics**
+```
+GET /api/stats/admin/payments
+Query Params: startDate, endDate, page, limit
+```
+
+Payment and revenue metrics:
+- Total payments and revenue
+- Status breakdown (with percentages)
+- Subscription type breakdown
+- Revenue by subscription type
+
+**4. Travel Plan Analytics**
+```
+GET /api/stats/admin/tours
+Query Params: page, limit
+```
+
+Travel planning metrics:
+- Total travel plans created
+- Plans by travel type distribution
+- Plans with requests/approved members/reviews
+- Average members per plan
+
+**5. Travel Request Analytics**
+```
+GET /api/stats/admin/bookings
+Query Params: page, limit
+```
+
+Travel request statistics:
+- Total requests
+- Status breakdown (pending/accepted/rejected)
+
+**6. Top Reviewed Hosts**
+```
+GET /api/stats/admin/top-hosts
+Query Params: limit (default: 10, max: 50)
+```
+
+Rankings and leaderboard data for best hosts
+
+**7. Top Destinations**
+```
+GET /api/stats/admin/top-destinations
+Query Params: limit (default: 10, max: 50)
+```
+
+Most popular travel destinations with:
+- Total plans per destination
+- Average budget ranges
+
+### User Dashboard Endpoints
+
+**1. Personal Dashboard**
+```
+GET /api/stats/me/overview
+Authorization: Bearer {JWT}
+```
+
+User-specific metrics:
+- Total tours created
+- Total tours joined
+- Reviews received
+- Average rating
+- Subscription status and expiry
+- Days remaining in subscription
+
+### Key Metrics for Visualizations
+
+**Pie Charts:**
+- Subscription types (Monthly vs Yearly)
+- Payment status breakdown
+- User status distribution
+- Rating distribution (1-5 stars)
+- Travel types breakdown
+
+**Line/Bar Charts:**
+- User growth trends
+- Revenue trends over time
+- Top destinations
+- Travel requests by status
+- Payment success rates
+
+**Tables:**
+- Top reviewed hosts with ratings
+- Top destinations with budget ranges
+- Recent payments
+- User activity log
+
+**KPI Cards:**
+- Total users & active percentage
+- Total revenue & growth
+- Premium users count
+- Average platform rating
+- Subscription counts
+
+### Dashboard Layout Strategy
+
+**Admin Dashboard:**
+1. Header KPIs (4 cards): Total users, Revenue, Premium count, Avg rating
+2. Overview charts (4 pie charts): User status, Payment status, Subscriptions, Ratings
+3. Business trends (2 line charts): User growth, Revenue trend
+4. Planning metrics (4 cards): Total plans, Plans by type, Requests, Members
+5. Top performers (2 tables): Best hosts, Top destinations
+
+**User Dashboard:**
+1. Profile header: Picture, name, rating, reviews
+2. Activity overview: Tours created, Tours joined, Reviews
+3. Subscription info: Type, expiry, days remaining
+4. Recent transactions: Last 10 payments with status
+
+---
+
+## 🗄️ Stats Service Implementation
+
+### Database Aggregation Pipelines
+
+The stats service uses MongoDB aggregation pipelines for:
+- Complex grouping operations
+- Multiple stage transformations
+- Performance optimization with early `$match` filtering
+- `$lookup` for relationship data joining
+- Efficient sorting and limiting at aggregation level
+
+### Performance Optimization Strategies
+
+1. **Early Filtering** - Date and status filters applied at `$match` stage
+2. **Projection** - Only required fields projected to reduce data transfer
+3. **Sorting** - Efficient sorting at aggregation level
+4. **Limiting** - Results capped early to minimize processing
+5. **Indexes** - Database indexes on commonly filtered fields
+
+### Example Aggregation Pipeline
+
+```typescript
+// Get top 10 destinations by travel plan count
+db.travelplans.aggregate([
+  { $group: { 
+      _id: "$destination",
+      count: { $sum: 1 },
+      avgBudgetMin: { $avg: "$budgetRange.min" }
+    }
+  },
+  { $sort: { count: -1 } },
+  { $limit: 10 },
+  { $lookup: {
+      from: "locations",
+      localField: "_id",
+      foreignField: "_id",
+      as: "destinationData"
+    }
+  }
+])
+```
+
+### Key Stats Service Functions
+
+| Function | Description |
+|----------|-------------|
+| `getUserStats()` | User count by status/role |
+| `getPaymentStats()` | Payment metrics and revenue |
+| `getTourStats()` | Travel plan analytics |
+| `getReviewStats()` | Rating distribution |
+| `getTopHosts()` | Best reviewed hosts ranking |
+| `getTopDestinations()` | Most popular locations |
+| `getUserGrowth()` | New user trends |
+
+---
+
+## Advanced Features
+
+### Real-Time Status Updates
+
+The IPN (Instant Payment Notification) handler ensures:
+- Immediate payment status updates without user interaction
+- User subscription activated as soon as payment succeeds
+- Automatic expiry date calculation
+- Failed payment tracking for support
+
+### Atomic Transactions
+
+```typescript
+// Payment verification + user subscription update in single transaction
+const session = await mongoose.startSession();
+session.startTransaction();
+
+try {
+  // 1. Update payment status
+  await Payment.updateOne({ _id: paymentId }, { paymentStatus: 'success' }, { session });
+  
+  // 2. Update user subscription
+  await User.updateOne({ _id: userId }, { subscription: {...} }, { session });
+  
+  // Both succeed or both rollback
+  await session.commitTransaction();
+} catch (error) {
+  await session.abortTransaction();
+  throw error;
+}
+```
+
+### Idempotent Operations
+
+Payment verification is idempotent:
+- Same payment can be verified multiple times safely
+- Returns existing payment without duplicate processing
+- No side effects from retry attempts
+
+### Data Consistency
+
+- Payment status follows strict state machine (PENDING → SUCCESS/FAILED/CANCELLED)
+- User subscription only activated after successful payment verification
+- Payment records immutable after creation (only status updates)
+- Transaction IDs globally unique with database index
+
+---
+
+## 🧪 Testing Guide
+
+### Unit Tests
+
+```bash
+# Test transaction ID generation
+npm test -- payment.service.test.ts
+
+# Test expiry date calculations
+npm test -- payment.utils.test.ts
+
+# Test subscription status checks
+npm test -- payment.service.subscription.test.ts
+```
+
+### Integration Tests
+
+```bash
+# Test full payment flow with mock SSLCommerz
+npm test -- payment.integration.test.ts
+
+# Test atomic transaction rollback
+npm test -- payment.transaction.test.ts
+```
+
+### Edge Cases
+
+- Duplicate payment verification attempt → Returns existing payment
+- Subscription renewal with active subscription → Creates new payment record
+- SSLCommerz API timeout → Graceful error handling, payment remains PENDING
+- Invalid validation response → Rejects payment with detailed error
+
+### Sandbox Testing
+
+1. Get SSLCommerz test credentials
+2. Set `SSL_STORE_ID` and `SSL_STORE_PASS` to test values
+3. Initialize payment in development environment
+4. Complete payment on SSLCommerz test gateway
+5. Verify payment status updated in database
+
+---
+
+## 🔍 Troubleshooting
+
+### Payment Stuck in PENDING
+
+**Causes:**
+- IPN endpoint not configured in SSLCommerz merchant panel
+- Callback URL unreachable from SSLCommerz
+- Database transaction failed silently
+
+**Solution:**
+- Verify IPN URL in SSLCommerz settings
+- Test with: `curl -X POST http://localhost:5000/api/payments/ipn`
+- Check database transaction logs
+- Use `/api/payments/verify` for manual verification
+
+### Subscription Not Activated
+
+**Causes:**
+- Payment status never updated to SUCCESS
+- User record not found in database
+- Atomic transaction rolled back
+
+**Solution:**
+- Check `db.payments.findOne({ transactionId: "..." })` for status
+- Verify user exists with correct ID
+- Review server logs for transaction errors
+
+### Duplicate Payments
+
+**Causes:**
+- Frontend allows multiple rapid clicks
+- No check for active subscription before new payment
+
+**Solution:**
+- Disable submit button during payment (frontend)
+- Backend checks for active subscription (already implemented)
+- Rate limit payment initialization endpoint
+
+---
+
+## 📈 Analytics & Insights
+
+### Key Business Metrics
+
+| Metric | Purpose | Insights |
+|--------|---------|----------|
+| Premium Conversion Rate | % users upgrading | Marketing effectiveness |
+| Monthly vs Yearly Ratio | Subscription preference | Revenue forecasting |
+| Payment Success Rate | Payment reliability | Gateway health |
+| Churn Rate | Subscription cancellations | User satisfaction |
+| Average Revenue per User | ARPU | Business growth |
+| Top Destinations | Popular locations | Content focus |
+| Best Reviewed Hosts | Quality indicators | Community trust |
+
+### Monitoring Recommendations
+
+- Set alerts for payment failures > 5% of total
+- Monitor average rating trends (drop indicates issues)
+- Track new user registration trends
+- Monitor API response times (should be < 500ms)
+- Set alerts for database transaction failures
+
+---
+
+## 🚀 Deployment & DevOps
+
+### Pre-Production Checklist
+
+- [ ] TypeScript compilation: `npm run build` ✓
+- [ ] ESLint checks: `npm run lint` ✓
+- [ ] Environment variables configured
+- [ ] MongoDB indexes created
+- [ ] HTTPS certificates installed
+- [ ] SSLCommerz credentials updated to production
+- [ ] Callback URLs publicly accessible
+- [ ] Rate limiting enabled
+- [ ] Logging service configured
+- [ ] Database backup strategy implemented
+- [ ] Monitoring and alerting setup
+- [ ] Load testing completed
+
+### Vercel Deployment
+
+```bash
+# Build and deploy
+npm run build
+vercel --prod
+
+# Set environment variables in Vercel dashboard
+# Deployment automatic on main branch push
+```
+
+### Scaling Considerations
+
+- **Database**: Ensure MongoDB indexes on all filtered/sorted fields
+- **Caching**: Redis for frequently accessed user subscription status
+- **Background Jobs**: Queue long-running stats aggregations
+- **API Rate Limiting**: Prevent abuse of payment/stats endpoints
+- **CDN**: Static assets and images via CDN
+- **Load Balancer**: Multiple API instances behind load balancer
+
+---
+
+## 🔐 Security Best Practices
+
+### Implemented ✅
+- JWT token-based authentication with expiry
+- bcryptjs password hashing (12 salt rounds)
+- Role-based access control (RBAC)
+- Input validation with Zod schemas
+- CORS protection with environment-based whitelist
+- Secure cookie flags (HTTPOnly, SameSite)
+- Environment variable protection (never in code)
+- Atomic transactions prevent partial updates
+- User data isolation (can only access own data)
+
+### Recommendations 🔒
+- Add HMAC signature verification for IPN callbacks
+- Implement IP whitelisting for SSLCommerz IPN
+- Add rate limiting to payment endpoints
+- Enable request logging and monitoring
+- Regular security audits and penetration testing
+- Keep dependencies updated regularly
+- Implement DDOS protection (Cloudflare)
+- Regular database backups to secure storage
+- Secrets rotation policy (quarterly)
+
+---
+
 ## Changelog
 
 ### Version 1.0.0 (December 2024)
 - ✨ Initial release
 - 🎯 Complete travel planning module
-- 💳 SSLCommerz payment integration
+- 💳 SSLCommerz payment integration with real-time IPN
 - ⭐ Review and rating system
-- 📊 Admin and user dashboard analytics
-- 🔐 Comprehensive authentication system
+- 📊 Comprehensive admin and user dashboard analytics
+- 🔐 Secure authentication with JWT
+- 🗄️ MongoDB aggregation pipelines for analytics
+- 🔄 Atomic transactions for data consistency
+- 📱 RESTful API with 30+ endpoints
 
 ---
 
@@ -1025,6 +1595,7 @@ This project is licensed under the ISC License - see LICENSE file for details.
 - 📧 **Email:** support@wetravelapp.com
 - 🐛 **Issues:** [GitHub Issues](https://github.com/Tafhim301/We-Travel-Backend/issues)
 - 💬 **Discussions:** [GitHub Discussions](https://github.com/Tafhim301/We-Travel-Backend/discussions)
+- 📚 **Documentation:** Check this README for comprehensive guides
 
 ---
 
@@ -1034,6 +1605,7 @@ This project is licensed under the ISC License - see LICENSE file for details.
 - Payment processing by SSLCommerz
 - Image hosting by Cloudinary
 - Deployed on Vercel
+- Analytics powered by MongoDB aggregation pipelines
 
 ---
 
@@ -1042,5 +1614,7 @@ This project is licensed under the ISC License - see LICENSE file for details.
 **Made with ❤️ by the We-Travel Team**
 
 ⭐ If you find this helpful, please star the repository!
+
+[Back to Top](#-we-travel-backend-api)
 
 </div>

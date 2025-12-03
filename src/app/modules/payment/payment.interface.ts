@@ -1,12 +1,11 @@
 import { Types } from "mongoose";
-
 export enum PaymentStatus {
   PENDING = "pending",
   SUCCESS = "success",
   FAILED = "failed",
-  CANCELLED = "cancelled",
+  CANCELED = "canceled",
+  
 }
-
 export enum SubscriptionType {
   MONTHLY = "monthly",
   YEARLY = "yearly",

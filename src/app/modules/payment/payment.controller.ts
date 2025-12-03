@@ -63,10 +63,9 @@ export const verifyPayment = catchAsync(async (req: Request, res: Response) => {
  */
 export const paymentSuccess = catchAsync(
     async (req: Request, res: Response) => {
+        const { transactionId, val_id } = req.query;
 
-        const { transactionId, val_id } = req.body;
-
-     
+        // Verify payment with SSLCommerz
         const result = await paymentServices.verifyPayment(
             transactionId as string,
             {
@@ -87,7 +86,7 @@ export const paymentSuccess = catchAsync(
 
 
 export const paymentFail = catchAsync(async (req: Request, res: Response) => {
-    const { transactionId } = req.body;
+    const { transactionId } = req.query;
 
     await paymentServices.handlePaymentFailure(transactionId as string);
 
@@ -99,7 +98,7 @@ export const paymentFail = catchAsync(async (req: Request, res: Response) => {
 
 export const paymentCancel = catchAsync(
     async (req: Request, res: Response) => {
-        const { transactionId } = req.body;
+        const { transactionId } = req.query;
 
         await paymentServices.handlePaymentCancellation(transactionId as string);
 
