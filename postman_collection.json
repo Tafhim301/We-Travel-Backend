@@ -1,0 +1,772 @@
+{
+	"info": {
+		"_postman_id": "c54cca98-da09-45f6-91bd-8549a84b7da4",
+		"name": "WE-TRAVEL-BACKEND-API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "46623237"
+	},
+	"item": [
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "Register-User",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "data",
+									"value": "{\n    \"body\": {\n        \"name\": \"John Doe\",\n        \"email\": \"example@email1.com\",\n        \"password\": \"@Tafi01\"\n    }\n}",
+									"type": "text"
+								},
+								{
+									"key": "profileImage",
+									"type": "file",
+									"src": "/D:/Downloads/Untitled-1 copy.jpg"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/v1/user/register",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"user",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get-All-Users",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODhhNDNjYWI5OWI5NjMxODJlYTUwOTAiLCJwaG9uZSI6ImFkbWluTnVtYmVyIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzU0MDUyNzAwLCJleHAiOjE3NTQxMzkxMDB9.OsvWIzpBpJSnmt3JcdJuz5QMTDYxTzdUptHQkUo3sng",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/api/v1/user/all-users",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"user",
+								"all-users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Info",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Update-Profile",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "data",
+									"value": "{\n    \"body\": {\n        \"name\": \"John Doe\",\n        \"email\": \"example@email.com\",\n        \"password\": \"@Tafi01\"\n    }\n}",
+									"type": "text"
+								},
+								{
+									"key": "profileImage",
+									"type": "file",
+									"src": "/D:/Downloads/Screenshot_2025_1109_113958.png"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/v1/user/update",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"user",
+								"update"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    // \"email\": \"example@email1.com\",\r\n    // \"password\": \"@Tafi01\"\r\n    \"email\": \"admin@example.com\",\r\n    \"password\": \"@AdminPass123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/v1/auth/login",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Log-out",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/api/v1/auth/logout",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"logout"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Interest",
+			"item": [
+				{
+					"name": "Create-Interest",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\" :  \"Travelling\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/v1/interests/create",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"interests",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get-All-Interest",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/api/v1/interests/",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"interests",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get-Single-Interest",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/api/v1/interests/692d9625116dc6702f5da96a",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"interests",
+								"692d9625116dc6702f5da96a"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update-Interest",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\" : \"Exploring\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/v1/interests/692d9625116dc6702f5da96a",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"interests",
+								"692d9625116dc6702f5da96a"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete-Interests",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/api/v1/interests/692d9625116dc6702f5da96a",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"interests",
+								"692d9625116dc6702f5da96a"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Travel-Plan",
+			"item": [
+				{
+					"name": "Get-All-Travel-Plan",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/api/v1/travelPlans/",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"travelPlans",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create-Travel-Plan",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "data",
+									"value": "{\n    \"body\": {\n        \"title\": \"Explore the Alps\",\n        \"description\": \"A 7-day adventurous trip through the scenic Alps, including hiking, skiing, and local culinary experiences.\",\n        \"destination\": \"Switzerland\",\n        \"startDate\": \"2025-12-10T08:00:00.000Z\",\n        \"endDate\": \"2025-12-17T18:00:00.000Z\",\n        \"budgetRange\": {\n            \"min\": 1500,\n            \"max\": 3000\n        },\n        \"travelType\": \"ADVENTURE\",\n        \"itinerary\": \"Day 1: Arrival in Zurich\\nDay 2: Travel to Interlaken\\nDay 3: Hiking in Jungfrau Region\\nDay 4: Skiing in Zermatt\\nDay 5: Local cultural tour\\nDay 6: Relaxation and spa\\nDay 7: Departure\",\n        \"visibility\": true,\n    }\n}",
+									"type": "text"
+								},
+								{
+									"key": "image",
+									"type": "file",
+									"src": "/D:/Downloads/urban-vintage-78A265wPiO4-unsplash.jpg"
+								},
+								{
+									"key": "demoImages",
+									"type": "file",
+									"src": [
+										"/D:/Downloads/luca-bravo-ii5JY_46xH0-unsplash.jpg",
+										"/D:/Downloads/jonatan-pie-3N5ccOE3wGg-unsplash (1).jpg"
+									]
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/v1/travelPlans/",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"travelPlans",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get-Single-Travel-Plan",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/api/v1/travelPlans/692db5d4f1b3fa7f2a63e0f4",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"travelPlans",
+								"692db5d4f1b3fa7f2a63e0f4"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update-Travel-Plan",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"type": "file",
+									"src": "/D:/Downloads/pexels-sohi-807598.jpg"
+								},
+								{
+									"key": "demoImages",
+									"type": "file",
+									"src": [
+										"/D:/Downloads/zen-summer-lk3F07BN8T8-unsplash.jpg",
+										"/D:/Downloads/IMG-20240330-WA0000.jpg"
+									]
+								},
+								{
+									"key": "data",
+									"value": "{\n    \"body\": {\n        \"title\": \"Explore the Alpsa\",\n        \"description\": \"A 7-day adventurous trip through the scenic Alps, including hiking, skiing, and local culinary experiences.\",\n        \"startDate\": \"2025-12-10T08:00:00.000Z\",\n        \"endDate\": \"2025-12-17T18:00:00.000Z\",\n        \"budgetRange\": {\n            \"min\": 1500,\n            \"max\": 3000\n        },\n        \"travelType\": \"ADVENTURE\",\n        \"itinerary\": \"Day 1: Arrival in Zurich\\nDay 2: Travel to Interlaken\\nDay 3: Hiking in Jungfrau Region\\nDay 4: Skiing in Zermatt\\nDay 5: Local cultural tour\\nDay 6: Relaxation and spa\\nDay 7: Departure\",\n\n\"removeImages\" : [ \"https://res.cloudinary.com/dczusykb2/image/upload/v1764603347/travel-plans/demos/travel-plans/demos/jonatan-pie-3N5ccOE3wGg-unsplash%20%281%29.jpg-1764603342036.jpg\",  \"https://res.cloudinary.com/dczusykb2/image/upload/v1764603341/travel-plans/demos/travel-plans/demos/luca-bravo-ii5JY_46xH0-unsplash.jpg-1764603312333.jpg\"]\n    \n    }\n}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/v1/travelPlans/692db5d4f1b3fa7f2a63e0f4",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"travelPlans",
+								"692db5d4f1b3fa7f2a63e0f4"
+							],
+							"query": [
+								{
+									"key": "image",
+									"value": null,
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete-Travel-Plan",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"type": "file",
+									"src": "/D:/Downloads/pexels-sohi-807598.jpg"
+								},
+								{
+									"key": "demoImages",
+									"type": "file",
+									"src": [
+										"/D:/Downloads/zen-summer-lk3F07BN8T8-unsplash.jpg",
+										"/D:/Downloads/pexels-lilartsy-1213447.jpg"
+									]
+								},
+								{
+									"key": "data",
+									"value": "{\n    \"body\": {\n        \"title\": \"Explore the Alpsaaa\",\n        \"description\": \"A 7-day adventurous trip through the scenic Alps, including hiking, skiing, and local culinary experiences.\",\n        \"startDate\": \"2025-12-10T08:00:00.000Z\",\n        \"endDate\": \"2025-12-17T18:00:00.000Z\",\n        \"budgetRange\": {\n            \"min\": 1500,\n            \"max\": 3000\n        },\n        \"travelType\": \"ADVENTURE\",\n        \"itinerary\": \"Day 1: Arrival in Zurich\\nDay 2: Travel to Interlaken\\nDay 3: Hiking in Jungfrau Region\\nDay 4: Skiing in Zermatt\\nDay 5: Local cultural tour\\nDay 6: Relaxation and spa\\nDay 7: Departure\",\n        \"visibility\": true\n    }\n}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/v1/travelPlans/692db5d4f1b3fa7f2a63e0f4",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"travelPlans",
+								"692db5d4f1b3fa7f2a63e0f4"
+							],
+							"query": [
+								{
+									"key": "image",
+									"value": null,
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Travel-Request",
+			"item": [
+				{
+					"name": "Create-Travel-Request",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"travelPlan\" : \"692db5d4f1b3fa7f2a63e0f4\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/v1/travel-requests/",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"travel-requests",
+								""
+							],
+							"query": [
+								{
+									"key": "image",
+									"value": null,
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Approve-Travel-Request",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"travelPan\" : \"692db5d4f1b3fa7f2a63e0f4\"\r\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/v1/travel-requests/",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"travel-requests",
+								""
+							],
+							"query": [
+								{
+									"key": "image",
+									"value": null,
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reject-Travel-Request",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"travelPan\" : \"692db5d4f1b3fa7f2a63e0f4\"\r\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/v1/travel-requests/",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"travel-requests",
+								""
+							],
+							"query": [
+								{
+									"key": "image",
+									"value": null,
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete-Travel-Request",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"travelPan\" : \"692db5d4f1b3fa7f2a63e0f4\"\r\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/v1/travel-requests/",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"travel-requests",
+								""
+							],
+							"query": [
+								{
+									"key": "image",
+									"value": null,
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get-All-Travel-Request",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/api/v1/travel-requests/",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"travel-requests",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get-Single-Travel-Request",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/api/v1/travel-requests/692ef89e9adbe875e0c229b3",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"travel-requests",
+								"692ef89e9adbe875e0c229b3"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Payments",
+			"item": [
+				{
+					"name": "Create-Payment",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \r\n    \"subscriptionType\" : \"yearly\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/v1/payment/init",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"payment",
+								"init"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Stats",
+			"item": [
+				{
+					"name": "User-Dashboard",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \r\n    \"subscriptionType\" : \"yearly\"\r\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/v1/stats/me/dashboard",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"stats",
+								"me",
+								"dashboard"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin-Dashboard",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/api/v1/stats/admin/dashboard",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"stats",
+								"admin",
+								"dashboard"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Payments-Stats",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/api/v1/stats/admin/payments",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"stats",
+								"admin",
+								"payments"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "New Folder",
+			"item": []
+		}
+	]
+}

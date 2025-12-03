@@ -69,7 +69,7 @@ const createUser = async (payload: { body: Partial<IUser> }, file?: Express.Mult
 
 const getAllUsers = async (query: Record<string, unknown>) => {
   const queryBuilder = new QueryBuilder(
-    User.find({ role: Role.USER }).populate("wallet"),
+    User.find({ role: Role.USER }),
     query as Record<string, string>
   );
 
