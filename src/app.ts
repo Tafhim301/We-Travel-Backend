@@ -11,7 +11,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: [envVars.FRONTEND_URL,"http://localhost:5173"],
+    origin: [envVars.FRONTEND_URL,"http://localhost:3000"],
     credentials: true,
 
   })
@@ -40,7 +40,7 @@ app.use("/api/v1", router);
 
 app.get("/", (req: Request, res: Response) => {
   res.status(200).json({
-    message: "Welcome to Digital Wallet Backend",
+    message: "Welcome to We Travel Backend",
   });
 });
 
