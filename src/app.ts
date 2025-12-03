@@ -29,7 +29,6 @@ app.use(express.json());
 
 app.set("trust proxy", 1);
 
-app.use(express.urlencoded({ extended: true }));
 
 app.use(cookieParser());
 
@@ -38,9 +37,10 @@ app.use(cookieParser());
 
 app.use("/api/v1", router);
 
+app.use(express.urlencoded({ extended: true }));
 app.get("/", (req: Request, res: Response) => {
   res.status(200).json({
-    message: "Welcome to We Travel Backend",
+    message: "Welcome to We-Travel Backend",
   });
 });
 

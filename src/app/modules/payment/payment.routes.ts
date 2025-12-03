@@ -44,17 +44,17 @@ router.get(
 );
 
 
-router.get(
+router.post(
     "/success",
     paymentControllers.paymentSuccess
 );
 
-router.get(
+router.post(
     "/fail",
     paymentControllers.paymentFail
 );
 
-router.get(
+router.post(
     "/cancel",
     paymentControllers.paymentCancel
 );
