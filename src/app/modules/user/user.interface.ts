@@ -41,6 +41,8 @@ profileImage?: {
   reviewsReceived?: Types.ObjectId[]; // references Review model
   reviewsWritten?: Types.ObjectId[];  // references Review model
 
+  averageRating?: number;             // average rating based on reviews received
+  totalReviewsReceived?: number;       // total number of reviews received
 
   subscription?: {
     subscriptionId?: string;

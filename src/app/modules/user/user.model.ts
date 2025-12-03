@@ -37,6 +37,10 @@ const UserSchema = new Schema<IUser>(
 
     reviewsWritten: [{ type: Schema.Types.ObjectId, ref: "Review" , default: [] }],
 
+    averageRating: { type: Number, default: 0, min: 0, max: 5 },
+
+    totalReviewsReceived: { type: Number, default: 0, min: 0 },
+
 
     subscription: {
       subscriptionId : {type : Schema.Types.ObjectId, ref : "Subscription", default: null},
