@@ -16,19 +16,9 @@ interface EnvConfig {
   MONTHLY_SUBSCRIPTION_PRICE: string;
   YEARLY_SUBSCRIPTION_PRICE: string;
   FRONTEND_URL: string;
-    SSL: {
-    STORE_ID: string;
-    STORE_PASS: string;
-    SSL_PAYMENT_API: string;
-    SSL_VALIDATION_API: string;
-    SSL_SUCCESS_FRONTEND_URL: string;
-    SSL_FAIL_FRONTEND_URL: string;
-    SSL_CANCEL_FRONTEND_URL: string;
-    SSL_SUCCESS_BACKEND_URL: string;
-    SSL_FAIL_BACKEND_URL: string;
-    SSL_CANCEL_BACKEND_URL: string;
-    SSL_IPN_URL: string;
-  };
+  STRIPE_SECRET_KEY: string;
+  STRIPE_WEBHOOK_SECRET: string;
+  BACKEND_URL: string;
   CLOUDINARY: {
     CLOUDINARY_CLOUD_NAME: string;
     CLOUDINARY_API_KEY: string;
@@ -49,20 +39,14 @@ const loadEnvVariables = (): EnvConfig => {
     "ADMIN_EMAIL",
     "ADMIN_PASSWORD",
     "FRONTEND_URL",
-    "SSL_STORE_PASS",
-    "SSL_PAYMENT_API",
-    "SSL_VALIDATION_API",
-    "SSL_SUCCESS_FRONTEND_URL",
-    "SSL_FAIL_FRONTEND_URL",
-    "SSL_CANCEL_FRONTEND_URL",
-    "SSL_SUCCESS_BACKEND_URL",
-    "SSL_FAIL_BACKEND_URL",
-    "SSL_CANCEL_BACKEND_URL",
+    "STRIPE_WEBHOOK_SECRET",
+    "BACKEND_URL",
     "CLOUDINARY_CLOUD_NAME",
     "CLOUDINARY_API_KEY",
     "CLOUDINARY_API_SECRET",
     "MONTHLY_SUBSCRIPTION_PRICE",
     "YEARLY_SUBSCRIPTION_PRICE",
+    "STRIPE_SECRET_KEY",
   ];
   requiredEnvVAriables.forEach((key) => {
     if (!process.env[key]) {
@@ -84,19 +68,9 @@ const loadEnvVariables = (): EnvConfig => {
     FRONTEND_URL: process.env.FRONTEND_URL as string,
     MONTHLY_SUBSCRIPTION_PRICE: process.env.MONTHLY_SUBSCRIPTION_PRICE as string,
     YEARLY_SUBSCRIPTION_PRICE: process.env.YEARLY_SUBSCRIPTION_PRICE as string,
-      SSL: {
-      STORE_ID: process.env.SSL_STORE_ID as string,
-      STORE_PASS: process.env.SSL_STORE_PASS as string,
-      SSL_PAYMENT_API: process.env.SSL_PAYMENT_API as string,
-      SSL_VALIDATION_API: process.env.SSL_VALIDATION_API as string,
-      SSL_SUCCESS_FRONTEND_URL: process.env.SSL_SUCCESS_FRONTEND_URL as string,
-      SSL_FAIL_FRONTEND_URL: process.env.SSL_FAIL_FRONTEND_URL as string,
-      SSL_CANCEL_FRONTEND_URL: process.env.SSL_CANCEL_FRONTEND_URL as string,
-      SSL_SUCCESS_BACKEND_URL: process.env.SSL_SUCCESS_BACKEND_URL as string,
-      SSL_FAIL_BACKEND_URL: process.env.SSL_FAIL_BACKEND_URL as string,
-      SSL_CANCEL_BACKEND_URL: process.env.SSL_CANCEL_BACKEND_URL as string,
-      SSL_IPN_URL: process.env.SSL_IPN_URL as string,
-    },
+    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY as string,
+    STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET as string,
+    BACKEND_URL: process.env.BACKEND_URL as string,
     CLOUDINARY: {
       CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME as string,
       CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY as string,

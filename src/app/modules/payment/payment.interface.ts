@@ -1,12 +1,16 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Types } from "mongoose";
-export enum PaymentStatus {
-  PENDING = "pending",
-  SUCCESS = "success",
-  FAILED = "failed",
-  CANCELED = "canceled",
+
+export enum PAYMENT_STATUS {
+  PAID = "PAID",
+  UNPAID = "UNPAID",
+  FAILED = "FAILED",
+  CANCELLED = "CANCELLED",
+  REFUNDED = "REFUNDED",
   
 }
-export enum SubscriptionType {
+
+export enum SUBSCRIPTION_TYPE {
   MONTHLY = "monthly",
   YEARLY = "yearly",
 }
@@ -16,17 +20,9 @@ export interface IPayment {
   amount: number;
   currency: string;
   transactionId: string;
-  paymentStatus: PaymentStatus;
-  paymentGatewayData?: {
-    tran_id?: string;
-    status?: string;
-    val_id?: string;
-    bank_tran_id?: string;
-    card_type?: string;
-    card_no?: string;
-    card_issuer?: string;
-  };
-  subscriptionType: SubscriptionType;
+  paymentStatus: PAYMENT_STATUS;
+  paymentGatewayData?: any;
+  subscriptionType: SUBSCRIPTION_TYPE;
   expiresAt: Date;
   createdAt?: Date;
   updatedAt?: Date;

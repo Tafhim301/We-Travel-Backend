@@ -42,7 +42,7 @@ Connecting travelers worldwide to share travel ideas, collaborate on tours, and 
 - 📍 **Post Travel Plans** - Share travel ideas with detailed itineraries
 - 👥 **Collaborate** - Join other travelers' tours and co-create experiences
 - ⭐ **Review & Rate** - Leave reviews and ratings for hosts and experiences
-- 💳 **Manage Subscriptions** - Premium features with SSLCommerz payment integration
+ - 💳 **Manage Subscriptions** - Premium features with Stripe Checkout (subscriptions) and webhooks
 - 📊 **Analytics Dashboard** - Comprehensive admin and user statistics
 - 🏆 **Social Features** - Interests, locations, and travel communities
 
@@ -59,7 +59,7 @@ The platform uses a **modular, production-ready architecture** with proper error
 | **Travel Requests** | Join existing travel plans and manage requests |
 | **Location Management** | Explore and manage destination locations |
 | **Reviews & Ratings** | Leave reviews after travel completion |
-| **Payment Integration** | SSLCommerz gateway for subscription management |
+| **Payment Integration** | Stripe Checkout + Webhooks for subscription management |
 | **Admin Dashboard** | Analytics, user management, payment monitoring |
 | **User Dashboard** | Personal stats, travel history, bookings |
 | **Interest Matching** | Connect users based on travel interests |
@@ -84,8 +84,8 @@ The platform uses a **modular, production-ready architecture** with proper error
 - **Cookie-Parser** - HTTP cookie handling
 
 ### Payment Gateway
-- **SSLCommerz** - Payment processing
-- **Axios** - HTTP client for gateway communication
+- **Stripe** - Checkout Sessions & Webhooks (official `stripe` SDK)
+- **Axios** - HTTP client for other external requests
 
 ### File Management
 - **Multer** - File upload handling
@@ -151,7 +151,7 @@ The platform uses a **modular, production-ready architecture** with proper error
         ▼                                    ▼
 ┌──────────────────────┐      ┌──────────────────────┐
 │     MONGODB          │      │   EXTERNAL SERVICES  │
-│   Database Storage   │      │  - SSLCommerz        │
+│   Database Storage   │      │  - Stripe (Checkout & Webhooks)
 │                      │      │  - Cloudinary        │
 └──────────────────────┘      └──────────────────────┘
 ```

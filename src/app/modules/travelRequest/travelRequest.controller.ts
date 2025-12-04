@@ -1,24 +1,25 @@
-import { Request, Response } from "express";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { Request, Response, NextFunction } from "express";
 import { travelRequestService } from "./travelRequest.service";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 
 
-const getAllTravelRequest = catchAsync(async (req: Request, res: Response) => { 
+const getAllTravelRequest = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const userId = req.user.userId;
-  
-    const travelRequests = await travelRequestService.getAllTravelRequest(userId, req.query as Record<string, string>);                      
 
-    sendResponse(res, { 
-      success: true,
-      statusCode: 200,
-      message: "Travel requests retrieved successfully",
-      data: {...travelRequests},
-    });
+  const travelRequests = await travelRequestService.getAllTravelRequest(userId, req.query as Record<string, string>);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Travel requests retrieved successfully",
+    data: { ...travelRequests },
+  });
 });
 
 
-const getSingleTravelRequest = catchAsync(async (req: Request, res: Response) => { 
+const getSingleTravelRequest = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const requestId = req.params.id;
 
   const travelRequest = await travelRequestService.getSingleTravelRequest(requestId);
@@ -32,7 +33,7 @@ const getSingleTravelRequest = catchAsync(async (req: Request, res: Response) =>
 });
 
 
-const createTravelRequest = catchAsync(async (req: Request, res: Response) => {
+const createTravelRequest = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const userId = req.user.userId;
   const payload = req.body;
 
@@ -46,7 +47,7 @@ const createTravelRequest = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const approveTravelRequest = catchAsync(async (req: Request, res: Response) => {
+const approveTravelRequest = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const requestId = req.params.id;
   const hostId = req.user.userId;
 
@@ -60,7 +61,7 @@ const approveTravelRequest = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const rejectTravelRequest = catchAsync(async (req: Request, res: Response) => {
+const rejectTravelRequest = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const requestId = req.params.id;
   const hostId = req.user.userId;
 
@@ -74,7 +75,7 @@ const rejectTravelRequest = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const deleteTravelRequest = catchAsync(async (req: Request, res: Response) => {
+const deleteTravelRequest = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const requestId = req.params.id;
 
   await travelRequestService.deleteTravelRequest(requestId);

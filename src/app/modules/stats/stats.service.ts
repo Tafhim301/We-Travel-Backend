@@ -3,12 +3,12 @@
 import AppError from "../../errorHandlers/appError";
 import httpStatus from "http-status-codes";
 import { Payment } from "../payment/payment.model";
-import { PaymentStatus, SubscriptionType } from "../payment/payment.interface";
 import { isActive } from "../user/user.interface";
 import { User } from "../user/user.model";
 import { Review } from "../review/review.model";
 import { TravelPlan } from "../TravelPlan/travelPlan.model";
 import { TravelRequest } from "../travelRequest/travelRequest.model";
+import { PAYMENT_STATUS as PaymentStatus,SUBSCRIPTION_TYPE as SubscriptionType } from "../payment/payment.interface";
 
 const toDate = (input?: string | Date): Date | undefined => {
     if (!input) return undefined;
@@ -115,7 +115,7 @@ const getPaymentAndRevenueAnalytics = async (opts?: { startDate?: string; endDat
             { $group: { _id: "$paymentStatus", count: { $sum: 1 }, totalAmount: { $sum: "$amount" } } },
         ]),
         Payment.aggregate([
-            { $match: { ...match, paymentStatus: PaymentStatus.SUCCESS } },
+            { $match: { ...match, paymentStatus: PaymentStatus.PAID } },
             { $group: { _id: null, total: { $sum: "$amount" } } },
         ]),
         Payment.aggregate([
@@ -123,7 +123,7 @@ const getPaymentAndRevenueAnalytics = async (opts?: { startDate?: string; endDat
             { $group: { _id: null, avg: { $avg: "$amount" } } },
         ]),
         Payment.aggregate([
-            { $match: { ...match, paymentStatus: PaymentStatus.SUCCESS } },
+            { $match: { ...match, paymentStatus: PaymentStatus.PAID } },
             { $group: { _id: "$subscriptionType", count: { $sum: 1 }, revenue: { $sum: "$amount" } } },
         ]),
     ]);

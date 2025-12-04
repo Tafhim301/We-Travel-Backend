@@ -1,45 +1,50 @@
-import { Schema, model } from "mongoose";
-import { IPayment, PaymentStatus, SubscriptionType } from "./payment.interface";
+import { model, Schema } from "mongoose";
+import { IPayment, PAYMENT_STATUS, SUBSCRIPTION_TYPE } from "./payment.interface";
 
-const PaymentSchema = new Schema<IPayment>(
+const paymentSchema = new Schema<IPayment>(
   {
-    user: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    amount: { type: Number, required: true },
-    currency: { type: String, default: "BDT" },
-    transactionId: { type: String, required: true, unique: true },
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    transactionId: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    amount: {
+      type: Number,
+      required: true,
+    },
+    currency: {
+      type: String,
+      default: "BDT",
+    },
     paymentStatus: {
       type: String,
-      enum: Object.values(PaymentStatus),
-      default: PaymentStatus.PENDING,
+      enum: Object.values(PAYMENT_STATUS),
+      default: PAYMENT_STATUS.UNPAID,
     },
     paymentGatewayData: {
-      tran_id: { type: String },
-      status: { type: String },
-      val_id: { type: String },
-      bank_tran_id: { type: String },
-      card_type: { type: String },
-      card_no: { type: String },
-      card_issuer: { type: String },
+      type: Schema.Types.Mixed,
     },
     subscriptionType: {
       type: String,
-      enum: Object.values(SubscriptionType),
+      enum: Object.values(SUBSCRIPTION_TYPE),
       required: true,
     },
-    expiresAt: { type: Date, required: true },
+    expiresAt: {
+      type: Date,
+      required: true,
+    },
   },
   { timestamps: true }
 );
 
-// Index for fast user lookups
-PaymentSchema.index({ user: 1 });
+// Indexes for performance
+paymentSchema.index({ user: 1 });
+paymentSchema.index({ paymentStatus: 1 });
+paymentSchema.index({ user: 1, paymentStatus: 1 });
 
-
-
-// Index for status queries
-PaymentSchema.index({ paymentStatus: 1 });
-
-// Compound index for user and payment status
-PaymentSchema.index({ user: 1, paymentStatus: 1 });
-
-export const Payment = model<IPayment>("Payment", PaymentSchema);
+export const Payment = model<IPayment>("Payment", paymentSchema);

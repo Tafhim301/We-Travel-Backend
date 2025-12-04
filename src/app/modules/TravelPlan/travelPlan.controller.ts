@@ -1,31 +1,36 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // travelPlan.controller.ts
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { travelPlanServices } from "./travelPlan.service";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 
-const createTravelPlan = catchAsync(async (req: Request, res: Response) => {
+const createTravelPlan = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const userId = req.user.userId;
   const files = { image: req.file, demoImages: (req.files as Express.Multer.File[] | undefined) };
 
   const result = await travelPlanServices.createTravelPlan(userId, req.body, files);
 
-  sendResponse(res, 
-    { success: true, 
-     statusCode: 200,
-     message: "TravelPlan created successfully",
-     data: result });
+  sendResponse(res,
+    {
+      success: true,
+      statusCode: 200,
+      message: "TravelPlan created successfully",
+      data: result
+    });
 });
 
-const getTravelPlans = catchAsync(async (req: Request, res: Response) => {
+const getTravelPlans = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const result = await travelPlanServices.getTravelPlans(req.query as Record<string, string>);
-  sendResponse(res, { success: true,
-     statusCode: 200, 
-     message: "TravelPlans retrieved",
-    ...result });
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "TravelPlans retrieved",
+    ...result
+  });
 });
 
-const getTravelPlanById = catchAsync(async (req: Request, res: Response) => {
+const getTravelPlanById = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const planId = req.params.id;
   const result = await travelPlanServices.getTravelPlanById(planId);
   sendResponse(res, { success: true, statusCode: 200, message: "TravelPlan retrieved successfully", data: result });
@@ -33,27 +38,27 @@ const getTravelPlanById = catchAsync(async (req: Request, res: Response) => {
 
 
 
-const updateTravelPlan = catchAsync(async (req: Request, res: Response) => {
+const updateTravelPlan = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const planId = req.params.id;
 
   const body = req.body.body;
 
   interface TravelPlanFiles {
-  image?: Express.Multer.File;
-  demoImages?: Express.Multer.File[];
-}
+    image?: Express.Multer.File;
+    demoImages?: Express.Multer.File[];
+  }
 
 
 
-const files: TravelPlanFiles = {
-  image: Array.isArray(req.files)
-    ? undefined
-    : req.files?.image?.[0],
+  const files: TravelPlanFiles = {
+    image: Array.isArray(req.files)
+      ? undefined
+      : req.files?.image?.[0],
 
-  demoImages: Array.isArray(req.files)
-    ? []
-    : (req.files?.demoImages ?? []),
-};
+    demoImages: Array.isArray(req.files)
+      ? []
+      : (req.files?.demoImages ?? []),
+  };
 
 
 
@@ -74,7 +79,7 @@ const files: TravelPlanFiles = {
 
 
 
-const deleteTravelPlan = catchAsync(async (req: Request, res: Response) => {
+const deleteTravelPlan = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const planId = req.params.id;
   await travelPlanServices.deleteTravelPlan(planId);
   sendResponse(res, { success: true, statusCode: 200, message: "TravelPlan deleted successfully", data: null });

@@ -11,7 +11,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: [envVars.FRONTEND_URL,"http://localhost:3000"],
+    origin: [envVars.FRONTEND_URL, "http://localhost:3000"],
     credentials: true,
 
   })
@@ -25,7 +25,9 @@ app.use(
   })
 );
 
-app.use(express.json());
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+app.use(express.json({ verify: (req, res, buf) => { (req as any).rawBody = buf; } }));
 
 app.set("trust proxy", 1);
 
