@@ -233,18 +233,14 @@ YEARLY_SUBSCRIPTION_PRICE=5000
 # Frontend URL
 FRONTEND_URL=http://localhost:3000
 
-# SSLCommerz Payment Gateway
-SSL_STORE_ID=your_ssl_store_id
-SSL_STORE_PASS=your_ssl_store_password
-SSL_PAYMENT_API=https://sandbox.sslcommerz.com/gwprocess/v4/api.php
-SSL_VALIDATION_API=https://sandbox.sslcommerz.com/validator/api/validationAPI.php
-SSL_SUCCESS_FRONTEND_URL=http://localhost:3000/payment/success
-SSL_FAIL_FRONTEND_URL=http://localhost:3000/payment/fail
-SSL_CANCEL_FRONTEND_URL=http://localhost:3000/payment/cancel
-SSL_SUCCESS_BACKEND_URL=http://localhost:5000/api/payment/success
-SSL_FAIL_BACKEND_URL=http://localhost:5000/api/payment/fail
-SSL_CANCEL_BACKEND_URL=http://localhost:5000/api/payment/cancel
-SSL_IPN_URL=http://localhost:5000/api/payment/ipn
+# Stripe Payment Gateway
+# Use Stripe Checkout sessions and webhooks for subscription payments.
+STRIPE_SECRET_KEY=your_stripe_secret_key
+STRIPE_WEBHOOK_SECRET=your_stripe_webhook_signing_secret
+BACKEND_URL=http://localhost:5000
+STRIPE_SUCCESS_FRONTEND_URL=http://localhost:3000/payment/success
+STRIPE_FAIL_FRONTEND_URL=http://localhost:3000/payment/fail
+STRIPE_CANCEL_FRONTEND_URL=http://localhost:3000/payment/cancel
 
 # Cloudinary Configuration
 CLOUDINARY_CLOUD_NAME=your_cloud_name
@@ -429,14 +425,14 @@ PENDING → SUCCESS ✓ (User subscribed)
 | POST | `/verify-payment` | Verify payment | ✅ USER | `{ transactionId }` |
 | GET | `/history` | Get payment history | ✅ USER | `page`, `limit`, `status` |
 | GET | `/:paymentId` | Get payment details | ✅ USER | - |
-| POST | `/ipn` | IPN callback (SSLCommerz) | ❌ | SSLCommerz data |
+| POST | `/webhook` | Stripe webhook endpoint | ❌ | Stripe event payload |
 | GET | `/subscription/status` | Check subscription | ✅ USER | - |
 
 **Payment Response:**
 ```json
 {
   "success": true,
-  "paymentUrl": "https://sandbox.sslcommerz.com/openapi/checkout/...",
+  "paymentUrl": "https://checkout.stripe.com/pay/cs_test_...",
   "transactionId": "unique_transaction_id"
 }
 ```
@@ -857,7 +853,8 @@ Before deploying to production:
 - [ ] All environment variables configured
 - [ ] Database backups enabled
 - [ ] SSL certificates configured
-- [ ] SSLCommerz production credentials obtained
+- [ ] Stripe API keys configured (secret key and webhook secret)
+- [ ] Stripe webhook registered in Dashboard
 - [ ] Cloudinary account configured
 - [ ] CORS and security headers enabled
 - [ ] Rate limiting implemented
@@ -962,7 +959,7 @@ new QueryBuilder(query, filters)
 - ✅ **Error Masking** - Sensitive info not exposed
 - ✅ **Environment Variables** - Credentials in .env
 - ✅ **Secure Cookies** - HTTP-only cookie flags
-- ✅ **Payment Validation** - SSLCommerz signature verification
+- ✅ **Payment Validation** - Stripe webhook signature verification
 
 ---
 
@@ -984,9 +981,9 @@ npm install --legacy-peer-deps
 - Ensure network access in MongoDB Atlas
 
 ### Payment integration issues
-- Verify SSLCommerz credentials
-- Check callback URLs in `.env`
-- Review SSLCommerz documentation
+- Verify Stripe API keys and webhook secret in `.env`
+- Check webhook endpoint is registered in Stripe Dashboard
+- Review Stripe webhook logs for failed deliveries
 
 ---
 
@@ -996,16 +993,16 @@ npm install --legacy-peer-deps
 - [MongoDB Documentation](https://docs.mongodb.com/)
 - [Mongoose Documentation](https://mongoosejs.com/)
 - [JWT Authentication](https://jwt.io/)
-- [SSLCommerz Integration](https://developer.sslcommerz.com/)
+- [Stripe Integration](https://stripe.com/docs)
 - [Cloudinary Documentation](https://cloudinary.com/documentation)
 - [TypeScript Handbook](https://www.typescriptlang.org/docs/)
 
 ---
 
-## 💳 Payment Integration (SSLCommerz)
+## 💳 Payment Integration (Stripe)
 
 ### Overview
-The We-Travel platform integrates with **SSLCommerz**, Bangladesh's leading payment gateway, enabling secure subscription payments with real-time status updates.
+The We-Travel platform integrates with **Stripe** for payments using Checkout Sessions and Webhooks, enabling secure subscription payments with server-side verification.
 
 ### Payment Flow
 
@@ -1014,15 +1011,15 @@ User Initiates Payment
     ↓
 Generate Transaction ID & Payment Record (PENDING)
     ↓
-Call SSLCommerz Gateway API
+Create Stripe Checkout Session (metadata: transactionId)
     ↓
-Redirect User to SSLCommerz Payment Page
+Redirect User to Stripe Checkout Page
     ↓
 User Completes/Cancels Payment
     ↓
-SSLCommerz Callbacks (IPN + Redirect)
+Stripe sends Webhook Event (checkout.session.completed)
     ↓
-Update Payment Status
+Verify webhook signature → Update Payment Status
     ↓
 Update User Subscription (Atomic Transaction)
     ↓
@@ -1032,8 +1029,8 @@ Redirect User to Success/Fail/Cancel Page
 ### Key Functions
 
 **1. Initialize Payment**
-```typescript
-POST /api/payments/init
+```http
+POST /api/v1/payment/init
 Authorization: Bearer {JWT}
 Content-Type: application/json
 
@@ -1044,22 +1041,22 @@ Request:
 
 Response:
 {
-  "paymentUrl": "https://securepay.sslcommerz.com/...",
+  "paymentUrl": "https://checkout.stripe.com/pay/cs_test_...",
   "transactionId": "TXN-1733212345678-abc123d"
 }
 ```
 
 **2. Handle Success Callback**
-- Called when user completes payment on SSLCommerz
+- Called when user completes payment on Stripe Checkout or when webhook reports completion
 - Updates payment status to SUCCESS
 - Activates user subscription (atomic transaction)
 - Calculates expiry date based on subscription type
 
-**3. IPN (Instant Payment Notification)**
+**3. Webhook (Server Notification)**
 ```
-SSLCommerz POST → /api/payments/ipn
-Real-time payment status update
-Processes immediately without user action
+Stripe POST → /api/v1/payment/webhook
+Real-time payment status update via verified webhook
+Processes asynchronously and reliably
 ```
 
 **4. Verify Payment Status**
@@ -1097,29 +1094,22 @@ Response:
 ✅ **Atomic Transactions** - Payment status + user subscription update together
 ✅ **Idempotent Operations** - Safe to retry failed operations
 ✅ **Amount Verification** - Validates payment amount matches database
-✅ **Transaction ID Verification** - Ensures transaction matches SSLCommerz report
+✅ **Transaction ID Verification** - Ensures transaction matches Stripe session/webhook data
 ✅ **User Isolation** - Users access only own payment history
 ✅ **Protected Routes** - Payment endpoints require JWT authentication
 
 ### Environment Configuration
 
 ```env
-# SSLCommerz Credentials
-SSL_STORE_ID=your_store_id
-SSL_STORE_PASS=your_store_password
-SSL_PAYMENT_API=https://securepay.sslcommerz.com/gwprocess/v4/api.php
-SSL_VALIDATION_API=https://securepay.sslcommerz.com/validator/api/validationAPI.php
+# Stripe Credentials
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+BACKEND_URL=https://api.yourdomain.com
 
-# Callback URLs (what SSLCommerz calls)
-SSL_SUCCESS_BACKEND_URL=https://api.yourdomain.com/api/payments/success
-SSL_FAIL_BACKEND_URL=https://api.yourdomain.com/api/payments/fail
-SSL_CANCEL_BACKEND_URL=https://api.yourdomain.com/api/payments/cancel
-SSL_IPN_URL=https://api.yourdomain.com/api/payments/ipn
-
-# Frontend Redirect URLs (where user goes)
-SSL_SUCCESS_FRONTEND_URL=https://yourdomain.com/payment/success
-SSL_FAIL_FRONTEND_URL=https://yourdomain.com/payment/failed
-SSL_CANCEL_FRONTEND_URL=https://yourdomain.com/payment/cancelled
+# Callback / Redirect URLs
+STRIPE_SUCCESS_FRONTEND_URL=https://yourdomain.com/payment/success
+STRIPE_FAIL_FRONTEND_URL=https://yourdomain.com/payment/failed
+STRIPE_CANCEL_FRONTEND_URL=https://yourdomain.com/payment/cancelled
 
 # Subscription Prices (BDT)
 MONTHLY_SUBSCRIPTION_PRICE=299
@@ -1128,8 +1118,8 @@ YEARLY_SUBSCRIPTION_PRICE=2999
 
 ### Testing Checklist
 
-- [ ] Payment initialization returns valid gateway URL
-- [ ] User redirected to SSLCommerz payment page
+- [ ] Payment initialization returns valid Stripe Checkout URL
+- [ ] User redirected to Stripe Checkout page
 - [ ] Payment completion updates status to SUCCESS
 - [ ] User subscription activated after payment
 - [ ] Subscription details show correct expiry date
@@ -1137,13 +1127,14 @@ YEARLY_SUBSCRIPTION_PRICE=2999
 - [ ] Multiple payments work correctly
 - [ ] Cancellation updates status to CANCELLED
 - [ ] Failed payments update status to FAILED
-- [ ] IPN callback processes in real-time
+- [ ] Webhook callback processes in real-time
 
 ### Production Checklist
 
 - [ ] All environment variables configured
 - [ ] SSL certificates enabled (HTTPS required)
-- [ ] SSLCommerz production credentials obtained
+- [ ] Stripe API keys configured (secret and webhook secret)
+- [ ] Stripe webhook registered in Dashboard
 - [ ] Callback URLs accessible from internet
 - [ ] Database backups enabled
 - [ ] Error logging configured
@@ -1416,7 +1407,7 @@ npm test -- payment.service.subscription.test.ts
 ### Integration Tests
 
 ```bash
-# Test full payment flow with mock SSLCommerz
+# Test full payment flow with Stripe test mode
 npm test -- payment.integration.test.ts
 
 # Test atomic transaction rollback
@@ -1427,16 +1418,16 @@ npm test -- payment.transaction.test.ts
 
 - Duplicate payment verification attempt → Returns existing payment
 - Subscription renewal with active subscription → Creates new payment record
-- SSLCommerz API timeout → Graceful error handling, payment remains PENDING
-- Invalid validation response → Rejects payment with detailed error
+- Stripe API timeout → Graceful error handling, payment remains PENDING
+- Invalid webhook signature → Rejects event with 401 Unauthorized
 
 ### Sandbox Testing
 
-1. Get SSLCommerz test credentials
-2. Set `SSL_STORE_ID` and `SSL_STORE_PASS` to test values
+1. Get Stripe test keys (publishable and secret)
+2. Set `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` to test values
 3. Initialize payment in development environment
-4. Complete payment on SSLCommerz test gateway
-5. Verify payment status updated in database
+4. Complete payment on Stripe test Checkout page
+5. Verify payment status updated in database and webhook delivered
 
 ---
 
@@ -1445,25 +1436,25 @@ npm test -- payment.transaction.test.ts
 ### Payment Stuck in PENDING
 
 **Causes:**
-- IPN endpoint not configured in SSLCommerz merchant panel
-- Callback URL unreachable from SSLCommerz
+- Webhook endpoint not registered in Stripe Dashboard
+- Webhook endpoint unreachable from Stripe
 - Database transaction failed silently
 
 **Solution:**
-- Verify IPN URL in SSLCommerz settings
-- Test with: `curl -X POST http://localhost:5000/api/payments/ipn`
+- Verify webhook URL and signing secret in Stripe Dashboard
+- Test manually with: `curl -X POST http://localhost:5000/api/v1/payment/webhook` (with valid signature)
 - Check database transaction logs
-- Use `/api/payments/verify` for manual verification
+- Use Stripe Dashboard webhook logs to verify delivery
 
 ### Subscription Not Activated
 
 **Causes:**
-- Payment status never updated to SUCCESS
+- Webhook event never received or verified
 - User record not found in database
 - Atomic transaction rolled back
 
 **Solution:**
-- Check `db.payments.findOne({ transactionId: "..." })` for status
+- Check Stripe Dashboard webhook logs for failed deliveries
 - Verify user exists with correct ID
 - Review server logs for transaction errors
 
@@ -1513,7 +1504,8 @@ npm test -- payment.transaction.test.ts
 - [ ] Environment variables configured
 - [ ] MongoDB indexes created
 - [ ] HTTPS certificates installed
-- [ ] SSLCommerz credentials updated to production
+- [ ] Stripe API keys configured (production secret key and webhook secret)
+- [ ] Webhook registered in Stripe Dashboard
 - [ ] Callback URLs publicly accessible
 - [ ] Rate limiting enabled
 - [ ] Logging service configured
@@ -1557,8 +1549,8 @@ vercel --prod
 - User data isolation (can only access own data)
 
 ### Recommendations 🔒
-- Add HMAC signature verification for IPN callbacks
-- Implement IP whitelisting for SSLCommerz IPN
+- Add HMAC signature verification for webhook callbacks
+- Implement IP whitelisting for Stripe webhooks (if needed)
 - Add rate limiting to payment endpoints
 - Enable request logging and monitoring
 - Regular security audits and penetration testing
@@ -1574,7 +1566,7 @@ vercel --prod
 ### Version 1.0.0 (December 2024)
 - ✨ Initial release
 - 🎯 Complete travel planning module
-- 💳 SSLCommerz payment integration with real-time IPN
+- 💳 Stripe payment integration with Checkout Sessions and Webhooks
 - ⭐ Review and rating system
 - 📊 Comprehensive admin and user dashboard analytics
 - 🔐 Secure authentication with JWT
@@ -1602,19 +1594,56 @@ This project is licensed under the ISC License - see LICENSE file for details.
 ## Acknowledgments
 
 - Built with ❤️ using Node.js and MongoDB
-- Payment processing by SSLCommerz
-- Image hosting by Cloudinary
-- Deployed on Vercel
-- Analytics powered by MongoDB aggregation pipelines
+## 💳 Payment Integration (Stripe)
 
----
+### Overview
+The We-Travel platform integrates with **Stripe** using Checkout Sessions for payments and Stripe Webhooks for reliable event delivery. This enables secure subscription payments and server-side verification of payment completion.
 
-<div align="center">
+### Payment Flow
 
-**Made with ❤️ by the We-Travel Team**
+```
+User Initiates Payment
+  ↓
+Create Stripe Checkout Session (metadata: transactionId)
+  ↓
+Redirect User to Stripe Checkout
+  ↓
+User Completes/Cancels Payment
+  ↓
+Stripe sends Webhook (e.g., checkout.session.completed)
+  ↓
+Server verifies webhook signature → Update Payment Status
+  ↓
+Update User Subscription (Atomic Transaction)
+  ↓
+Redirect User to Success/Fail/Cancel Page
+```
 
-⭐ If you find this helpful, please star the repository!
+### Key Functions
 
-[Back to Top](#-we-travel-backend-api)
+**1. Initialize Payment**
+```http
+POST /api/v1/payment/init
+Authorization: Bearer {JWT}
+Content-Type: application/json
 
-</div>
+Request:
+{
+  "subscriptionType": "monthly" | "yearly"
+}
+
+Response:
+{
+  "paymentUrl": "https://checkout.stripe.com/pay/cs_test_...",
+  "transactionId": "TXN-1733212345678-abc123d"
+}
+```
+
+**2. Webhook (Server Verification)**
+- Stripe will POST event payloads to your configured webhook endpoint (no auth).
+- Verify the `Stripe-Signature` header using your `STRIPE_WEBHOOK_SECRET`.
+- On `checkout.session.completed`, update payment status and activate subscriptions atomically.
+
+**Notes:**
+- Register your webhook in the Stripe Dashboard and set `BACKEND_URL` accordingly.
+- Keep `STRIPE_WEBHOOK_SECRET` private and do not commit it to source control.
