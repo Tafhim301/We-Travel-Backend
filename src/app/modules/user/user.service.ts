@@ -57,8 +57,8 @@ const createUser = async (payload: { body: Partial<IUser> }, file?: Express.Mult
     await session.commitTransaction();
     session.endSession();
 
-    const accessToken = createUserTokens(user[0]);
-    return { user: user[0], accessToken: accessToken };
+    const {accessToken,refreshToken} = createUserTokens(user[0]);
+    return { user: user[0], accessToken: accessToken, refreshToken: refreshToken};
   } catch (error) {
     await session.abortTransaction();
     session.endSession();

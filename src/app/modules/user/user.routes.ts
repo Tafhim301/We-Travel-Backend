@@ -36,6 +36,7 @@ router.patch(
   validateRequest(updateUserZodSchema),
   userController.updateProfile
 );
+
 router.post(
   "/validate-password",
   checkAuth(...Object.values(Role)),

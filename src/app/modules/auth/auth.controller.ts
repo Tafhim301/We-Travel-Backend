@@ -5,18 +5,19 @@ import { sendResponse } from "../../utils/sendResponse";
 import { catchAsync } from "../../utils/catchAsync";
 import httpStatus from "http-status-codes";
 import { setAuthCookie } from "../../utils/setCookies";
+import { access } from "fs";
 
 const login = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     
     const result = await authServices.login(req.body);
 
-    setAuthCookie(res,result.token)
+    setAuthCookie(res,{accessToken : result.accessToken,refreshToken:result.refreshToken})
     sendResponse(res, {
       success: true,
       statusCode: httpStatus.OK,
       message: "User logged in successfully",
-      data: result.user
+      data: result
       
     });
   }

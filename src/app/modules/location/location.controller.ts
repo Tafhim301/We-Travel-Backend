@@ -66,10 +66,59 @@ const deletedLocation = catchAsync(
 );
 
 
+const getContinents = catchAsync(async (req, res) => {
+  const result = await locationService.getContinents();
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Continents fetched successfully",
+    data: result,
+  });
+});
+
+const getCountries = catchAsync(async (req, res) => {
+  const { continent } = req.query;
+  const result = await locationService.getCountriesByContinent(String(continent));
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Countries fetched successfully",
+    data: result,
+  });
+});
+
+const getCities = catchAsync(async (req, res) => {
+  const { country } = req.query;
+  const result = await locationService.getCitiesByCountry(String(country));
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Cities fetched successfully",
+    data: result,
+  });
+});
+
+const getDestinations = catchAsync(async (req, res) => {
+  const { city } = req.query;
+  const result = await locationService.getDestinationsByCity(String(city));
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Destinations fetched successfully",
+    data: result,
+  });
+});
+
+
+
 export const locationController = {
     createLocations,
     getAllLocations,
     getSingleLocation,
     updatedLocation,
     deletedLocation,
+    getContinents,
+    getCountries,
+    getCities,
+    getDestinations,
 };

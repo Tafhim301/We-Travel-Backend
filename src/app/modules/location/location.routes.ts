@@ -11,6 +11,10 @@ import { Role } from "../user/user.interface";
 const router = Router();
 
 router.get("/", locationController.getAllLocations );
+router.get("/continents", locationController.getContinents);
+router.get("/countries", locationController.getCountries);
+router.get("/cities", locationController.getCities);
+router.get("/destinations", locationController.getDestinations);
 router.get("/:id", locationController.getSingleLocation );
 router.post("/create", checkAuth(Role.ADMIN), validateRequest(createLocationValidation),locationController.createLocations );
 

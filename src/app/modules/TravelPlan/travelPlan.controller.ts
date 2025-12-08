@@ -7,7 +7,16 @@ import { sendResponse } from "../../utils/sendResponse";
 
 const createTravelPlan = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const userId = req.user.userId;
-  const files = { image: req.file, demoImages: (req.files as Express.Multer.File[] | undefined) };
+ const allFiles = req.files as Record<string, Express.Multer.File[]> | undefined;
+
+
+  const imageFile = allFiles?.image ? allFiles.image[0] : undefined;
+  const demoImagesFiles = allFiles?.demoImages ? allFiles.demoImages : [];
+
+  const files = { 
+    image: imageFile, 
+    demoImages: demoImagesFiles 
+  };
 
   const result = await travelPlanServices.createTravelPlan(userId, req.body, files);
 
@@ -79,10 +88,21 @@ const updateTravelPlan = catchAsync(async (req: Request, res: Response, next: Ne
 
 
 
+
+
+
 const deleteTravelPlan = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const planId = req.params.id;
   await travelPlanServices.deleteTravelPlan(planId);
   sendResponse(res, { success: true, statusCode: 200, message: "TravelPlan deleted successfully", data: null });
+});
+
+
+const  myTravelPlans = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  const userId = req.user.userId;
+  const result = await travelPlanServices.getTravelPlansByUserId(userId);
+
+  sendResponse(res, { success: true, statusCode: 200, message: "TravelPlans retrieved successfully", data: result });
 });
 
 export const travelPlanController = {
@@ -91,4 +111,5 @@ export const travelPlanController = {
   getTravelPlanById,
   updateTravelPlan,
   deleteTravelPlan,
+  myTravelPlans
 };

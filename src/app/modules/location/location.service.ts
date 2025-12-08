@@ -33,6 +33,24 @@ const deleteLocation = async (payload: Partial<ILocation>) => {
 }
 
 
+const getContinents = async () => {
+  return Location.distinct("continent");
+};
+
+const getCountriesByContinent = async (continent: string) => {
+  return Location.distinct("country", { continent });
+};
+
+const getCitiesByCountry = async (country: string) => {
+  return Location.distinct("city", { country });
+};
+
+const getDestinationsByCity = async (city: string) => {
+  return Location.find({ city }).select("destination country city continent");
+};
+
+
+
 
 export const locationService = {
     createLocations,
@@ -40,5 +58,9 @@ export const locationService = {
     getSingleLocation,
     updateLocation,
     deleteLocation,
+     getContinents,
+  getCountriesByContinent,
+  getCitiesByCountry,
+  getDestinationsByCity,
 
 }

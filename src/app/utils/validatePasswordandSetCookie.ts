@@ -7,10 +7,10 @@ import { IUser } from "../modules/user/user.interface";
 
 interface IResult {
   user: IUser;
-  accessToken: {
+
     accessToken: string;
     refreshToken: string;
-  }
+  
 }
 
 export const validatePassword = async (
@@ -32,10 +32,11 @@ export const validatePassword = async (
     throw new AppError(httpStatus.UNAUTHORIZED, "Password doesn't Match");
   }
 
-  const accessToken = createUserTokens(user);
+  const { accessToken , refreshToken } = createUserTokens(user);
 
   return {
     user: user,
-    accessToken: accessToken,
+   accessToken : accessToken,
+   refreshToken : refreshToken
   };
 };

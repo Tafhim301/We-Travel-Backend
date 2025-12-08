@@ -27,11 +27,12 @@ export const createTravelPlan = async (
   const session = await mongoose.startSession();
   session.startTransaction();
 
+
+
   try {
     let imageUrl = "";
     const demoImagesUrl: string[] = [];
 
-    // --- DATE VALIDATION ---
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -42,7 +43,7 @@ export const createTravelPlan = async (
       }
     }
 
-    // --- UPLOAD MAIN IMAGE ---
+ 
     if (files?.image) {
       const result = await uploadBufferCloudinary(
         files.image.buffer,
@@ -64,7 +65,7 @@ export const createTravelPlan = async (
       }
     }
 
-    // --- CREATE TRAVEL PLAN ---
+
     const travelPlan = await TravelPlan.create(
       [
         {
@@ -72,7 +73,7 @@ export const createTravelPlan = async (
           ...payload.body,
           image: imageUrl,
           demoImages: demoImagesUrl,
-          requestedBy: [userId], // creator becomes initial member
+          requestedBy: [userId], 
         },
       ],
       { session }
@@ -136,6 +137,13 @@ const getTravelPlanById = async (planId: string) => {
 };
 
 
+
+const getTravelPlansByUserId = async (userId: string) => {
+  const plans = await TravelPlan.find({ user: userId });
+  return plans;
+};
+
+
 export const updateTravelPlan = async (
   planId: string,
   payload: UpdateTravelPlanPayload,
@@ -148,7 +156,7 @@ export const updateTravelPlan = async (
     const plan = await TravelPlan.findById(planId).session(session);
     if (!plan) throw new AppError(404, "TravelPlan not found");
 
- 
+
     const restrictedFields = [
       "title",
       "description",
@@ -196,18 +204,18 @@ export const updateTravelPlan = async (
 
     if (payload.removeImages?.length) {
       for (const imgUrl of payload.removeImages) {
-       
-        await deleteFromCloudinaryByUrl(imgUrl);
-        
 
-     
+        await deleteFromCloudinaryByUrl(imgUrl);
+
+
+
         updatedDemoImages = updatedDemoImages.filter((x) => x !== imgUrl);
       }
     }
 
     payload.demoImages = updatedDemoImages;
 
-    
+
     const updatedPlan = await TravelPlan.findByIdAndUpdate(
       planId,
       payload,
@@ -244,4 +252,5 @@ export const travelPlanServices = {
   getTravelPlanById,
   updateTravelPlan,
   deleteTravelPlan,
+  getTravelPlansByUserId
 };

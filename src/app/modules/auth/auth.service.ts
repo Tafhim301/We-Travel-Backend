@@ -27,7 +27,10 @@ const login = async (payload: Partial<IUser>) => {
 
   return {
     user: result.user,
-    token: result.accessToken,
+ 
+     accessToken : result.accessToken,
+    refreshToken : result.refreshToken
+  
   };
 };
 

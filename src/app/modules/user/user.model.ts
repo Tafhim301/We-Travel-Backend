@@ -22,7 +22,7 @@ const UserSchema = new Schema<IUser>(
 
     bio: { type: String, default: "" },
 
-    interests: { type: [String], default: [] },
+    interests: { type: [Schema.Types.ObjectId], default: [], ref: "Interest"},
 
     visitedCountries: { type: [String], default: [] },
 
