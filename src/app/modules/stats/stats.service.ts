@@ -485,21 +485,17 @@ const getAdminFullDashboard = async (opts?: { startDate?: string; endDate?: stri
     };
 };
 
-/**
- * USER PERSONAL DASHBOARD
- * Personal stats for logged-in user
- */
+
 const getUserPersonalDashboard = async (userId: string) => {
     if (!userId) throw new AppError(httpStatus.BAD_REQUEST, "userId is required");
 
     const [
         user,
-        travelPlans,
+        travelPlansCount,
         sentRequests,
         receivedRequests,
         reviews,
         reviewsReceived,
-        payments,
         subscriptionStatus,
     ] = await Promise.all([
         User.findById(userId),
@@ -508,7 +504,6 @@ const getUserPersonalDashboard = async (userId: string) => {
         TravelRequest.countDocuments({ host: userId }),
         Review.countDocuments({ reviewer: userId }),
         Review.countDocuments({ host: userId }),
-        Payment.find({ user: userId }).sort({ createdAt: -1 }).limit(10),
         User.findById(userId).select("subscription"),
     ]);
 
@@ -525,18 +520,85 @@ const getUserPersonalDashboard = async (userId: string) => {
         daysUntilExpiry = Math.ceil((expiryTime - now.getTime()) / (1000 * 60 * 60 * 24));
     }
 
-    return {
-        user: {
-            id: user._id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-            profileImage: user.profileImage,
-            averageRating: user.averageRating,
-            totalReviewsReceived: user.totalReviewsReceived,
+    // -------------------
+    // Recent Travels by You (latest 5 plans)
+    // -------------------
+    const recentTravelsByYou = await TravelPlan.aggregate([
+        { $match: { user: user._id } },
+        { $sort: { createdAt: -1 } },
+        { $limit: 5 },
+          {
+        $lookup: {
+            from: "locations",
+            localField: "destination",
+            foreignField: "_id",
+            as: "destination",
         },
+    },
+    { $unwind: "$destination" },
+        {
+            $project: {
+                _id: 1,
+              destination: {
+                $concat: [
+                    "$destination.destination", ", ",
+                    "$destination.city", ", ",
+                    "$destination.country"
+                ]
+            },
+                startDate: 1,
+                endDate: 1,
+                status: 1,
+            },
+        },
+    ]);
+
+    // -------------------
+    // Recently Added Travels (community) - latest 5 plans from other users
+    // -------------------
+const recentCommunityTravels = await TravelPlan.aggregate([
+    { $match: { user: { $ne: user._id } } },
+    { $sort: { createdAt: -1 } },
+    { $limit: 5 },
+    {
+        $lookup: {
+            from: "users",
+            localField: "user",
+            foreignField: "_id",
+            as: "author",
+        },
+    },
+    { $unwind: "$author" },
+    {
+        $lookup: {
+            from: "locations",
+            localField: "destination",
+            foreignField: "_id",
+            as: "destination",
+        },
+    },
+    { $unwind: "$destination" },
+    {
+        $project: {
+            _id: 1,
+            destination: {
+                $concat: [
+                    "$destination.destination", ", ",
+                    "$destination.city", ", ",
+                    "$destination.country"
+                ]
+            },
+            createdAt: 1,
+            authorName: "$author.name",
+        },
+    },
+]);
+
+
+    return {
+        user,
         travelActivity: {
-            totalPlans: travelPlans,
+            totalPlans: travelPlansCount,
             sentRequests,
             receivedRequests,
             totalReviewsGiven: reviews,
@@ -548,9 +610,11 @@ const getUserPersonalDashboard = async (userId: string) => {
             expiresAt: subscriptionStatus?.subscription?.expiresAt || null,
             daysRemaining: daysUntilExpiry,
         },
-        recentPayments: payments,
+        recentTravelsByYou,
+        recentCommunityTravels,
     };
 };
+
 
 export const statsService = {
     getAdminDashboardOverview,

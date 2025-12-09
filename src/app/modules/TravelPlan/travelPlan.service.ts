@@ -240,10 +240,18 @@ export const updateTravelPlan = async (
 };
 
 
-const deleteTravelPlan = async (planId: string) => {
-  const plan = await TravelPlan.findByIdAndDelete(planId);
+const deleteTravelPlan = async (planId: string,userId:string) => {
+  const plan = await TravelPlan.findById(planId);
   if (!plan) throw new AppError(404, "TravelPlan not found");
-  return plan;
+  if(userId !== plan.user.toString()){
+    throw new AppError(403, "You are not authorized to delete this plan");
+  }
+
+
+
+  const deletePlan = await TravelPlan.findByIdAndDelete(planId);
+
+  return deletePlan;
 };
 
 export const travelPlanServices = {

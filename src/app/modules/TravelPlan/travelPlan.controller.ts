@@ -92,8 +92,9 @@ const updateTravelPlan = catchAsync(async (req: Request, res: Response, next: Ne
 
 
 const deleteTravelPlan = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  const userId = req.user.userId;
   const planId = req.params.id;
-  await travelPlanServices.deleteTravelPlan(planId);
+  await travelPlanServices.deleteTravelPlan(planId,userId);
   sendResponse(res, { success: true, statusCode: 200, message: "TravelPlan deleted successfully", data: null });
 });
 
