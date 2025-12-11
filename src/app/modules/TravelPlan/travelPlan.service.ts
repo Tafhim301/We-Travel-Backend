@@ -53,7 +53,7 @@ export const createTravelPlan = async (
       imageUrl = result.secure_url;
     }
 
-    // --- UPLOAD DEMO IMAGES ---
+   
     if (files?.demoImages?.length) {
       for (const file of files.demoImages) {
         const result = await uploadBufferCloudinary(
@@ -109,14 +109,16 @@ export const createTravelPlan = async (
 
 const getTravelPlans = async (query: Record<string, string>) => {
   const queryBuilder = new QueryBuilder(
-    TravelPlan.find().populate("destination"),
+    TravelPlan.find().populate("destination").populate("user"),
     query
   );
+
+  
 
   const plans = await queryBuilder
     .sort()
     .filter()
-    .search(["title", "travelType"])
+    .search(["title"])
     .paginate()
     .fields()
     .build();
@@ -129,9 +131,7 @@ const getTravelPlans = async (query: Record<string, string>) => {
 
 
 const getTravelPlanById = async (planId: string) => {
-  const plan = await TravelPlan.findById(planId).populate(
-    "destination user requestedBy"
-  );
+  const plan = await TravelPlan.findById(planId).populate("user");
   if (!plan) throw new AppError(404, "TravelPlan not found");
   return plan;
 };

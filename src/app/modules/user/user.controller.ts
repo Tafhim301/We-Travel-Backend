@@ -9,7 +9,7 @@ import { setAuthCookie } from "../../utils/setCookies";
 const createUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const result: Awaited<ReturnType<typeof userServices.createUser>> = await userServices.createUser(req.body,req.file);
-    setAuthCookie(res, result.accessToken);
+    setAuthCookie(res, {accessToken:result.accessToken, refreshToken : result.refreshToken});
     sendResponse(res, {
       success: true,
       statusCode: httpStatus.OK,
@@ -18,6 +18,21 @@ const createUser = catchAsync(
     });
   }
 );
+const getSingleUser  = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const id = req.params.id;
+    const result = await userServices.getSingleUser(id);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "User retrieved successfully",
+      data: result,
+    });
+  }
+);
+
+
 
 const getMe = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -87,5 +102,6 @@ export const userController = {
   getAllUsers,
   getMe,
   checkPassword,
-  updateProfile
+  updateProfile,
+  getSingleUser
 };

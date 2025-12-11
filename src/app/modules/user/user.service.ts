@@ -9,6 +9,8 @@ import bcryptjs from "bcryptjs";
 import httpStatus from "http-status-codes";
 import { createUserTokens } from "../../utils/userTokens";
 import { uploadBufferCloudinary } from "../../utils/cloudinaryUploader";
+import { TravelPlan } from "../TravelPlan/travelPlan.model";
+
 
 
 
@@ -170,6 +172,33 @@ const checkPassword = async (userId: string, password: string) => {
   return user;
 };
 
+
+
+export const getSingleUser = async (userId: string) => {
+
+
+  const user = await User.findById(userId)
+    .populate({
+      path: "reviewsReceived",
+      populate: { path: "reviewer" },
+    })
+    .populate("subscription")
+    .populate("interests");
+
+  if (!user) {
+    throw new AppError(404, "User Not Found");
+  }
+  const travelPlans = await TravelPlan.find({
+    user: userId,
+    endDate: { $gte: new Date() },
+  }).populate("user");
+
+  return {
+    user,
+    travelPlans,
+  };
+};
+
 export const userServices = {
   createUser,
   getAllUsers,
@@ -177,4 +206,5 @@ export const userServices = {
   checkPassword,
   updateProfile,
   changePassword,  
+  getSingleUser
 };

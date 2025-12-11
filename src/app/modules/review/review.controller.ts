@@ -9,7 +9,7 @@ import httpStatus from "http-status-codes";
 
 
 export const createReview = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  const reviewerId = (req.user as { _id: string })?._id;
+  const reviewerId = (req.user as { userId: string })?.userId;
   const result = await reviewServices.createReview(reviewerId, req.body);
 
   sendResponse(res, {
@@ -69,7 +69,7 @@ export const getReviewsWrittenByUser = catchAsync(async (req: Request, res: Resp
 
 export const getReviewById = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const { reviewId } = req.params;
-  const requestingUserId = (req.user as { _id: string })?._id;
+  const requestingUserId = (req.user as { userId: string })?.userId;
 
   const result = await reviewServices.getReviewDetails(reviewId, requestingUserId);
 
@@ -123,7 +123,7 @@ export const getTopRatedHosts = catchAsync(async (req: Request, res: Response, n
 
 export const checkIfUserHasReviewedTravel = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const reviewerId = (req.user as { _id: string })?._id;
+    const reviewerId = (req.user as { userId: string })?.userId;
     const { travelPlanId } = req.params;
 
     const hasReviewed = await reviewServices.checkIfUserHasReviewedTravel(
@@ -143,7 +143,7 @@ export const checkIfUserHasReviewedTravel = catchAsync(
 
 export const validateReviewEligibility = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const reviewerId = (req.user as { _id: string })?._id;
+    const reviewerId = (req.user as { userId: string })?.userId;
     const { hostId, travelPlanId } = req.query as Record<string, string>;
 
     if (!hostId || !travelPlanId) {

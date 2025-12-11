@@ -28,6 +28,12 @@ router.get(
 
   userController.getMe
 );
+router.get(
+  "/:id",
+
+
+  userController.getSingleUser
+);
 router.patch(
   "/update",
   checkAuth(...Object.values(Role)),

@@ -15,19 +15,21 @@ const getAllTravelRequest = async (
   const user = await User.findById(userId);
   if (!user) throw new AppError(404, "User Not Found");
 
-
   const baseQuery = TravelRequest.find({
-    $or: [{ requester: userId }, { host: userId }],
+    $and: [
+      { $or: [{ requester: userId }, { host: userId }] },
+      { $expr: { $ne: ["$requester", "$host"] } }
+    ]
   }).populate("travelPlan requester host");
 
   const queryBuilder = new QueryBuilder(baseQuery, query);
 
   const requests = await queryBuilder
-    .filter()  
-    .search(["message", "status"]) 
-    .sort()         
-    .paginate()     
-    .fields()       
+    .filter()
+    .search(["message", "status"])
+    .sort()
+    .paginate()
+    .fields()
     .build();
 
   const meta = await queryBuilder.getMeta();
@@ -91,6 +93,13 @@ const createTravelRequest = async (
     status: TravelRequestStatus.PENDING,
     message: payload.message || "",
   });
+
+  await TravelPlan.findByIdAndUpdate(payload.travelPlan, {
+    $push: { requestedBy: userId },
+  });
+
+
+
 
   return travelRequest;
 };

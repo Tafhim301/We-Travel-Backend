@@ -16,7 +16,7 @@ router.get(
 
 router.get(
   "/:id",  
-    checkAuth(Role.USER, Role.ADMIN),
+
     travelRequestController.getSingleTravelRequest
 );
 

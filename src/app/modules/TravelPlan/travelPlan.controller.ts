@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-// travelPlan.controller.ts
+
 import { Request, Response, NextFunction } from "express";
 import { travelPlanServices } from "./travelPlan.service";
 import { catchAsync } from "../../utils/catchAsync";

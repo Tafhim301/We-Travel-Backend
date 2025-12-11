@@ -9,15 +9,12 @@ import { User } from "../user/user.model";
 import { TravelRequestStatus } from "../travelRequest/travelRequest.interface";
 import httpStatus from "http-status-codes";
 
-/**
- * Calculate and update the average rating for a host
- * This function aggregates all reviews for a host and updates their averageRating
- */
+
 const calculateAndUpdateAverageRating = async (
     hostId: string,
     session?: mongoose.ClientSession
 ): Promise<void> => {
-    // Aggregate all reviews for the host to get average rating
+
     const result = await Review.aggregate([
         { $match: { host: new mongoose.Types.ObjectId(hostId) } },
         {
@@ -32,7 +29,7 @@ const calculateAndUpdateAverageRating = async (
     const averageRating = result.length > 0 ? result[0].averageRating : 0;
     const totalReviewsReceived = result.length > 0 ? result[0].totalReviews : 0;
 
-    // Update the host's user profile with new average rating
+
     if (session) {
         await User.findByIdAndUpdate(
             hostId,
@@ -54,15 +51,7 @@ const calculateAndUpdateAverageRating = async (
     }
 };
 
-/**
- * Create a new review with comprehensive validation
- * - Validates reviewer exists
- * - Validates host exists
- * - Validates travel plan exists and has ended
- * - Validates that the reviewer was accepted in the travel plan
- * - Validates that only one review per travel plan per reviewer
- * - Updates host's average rating
- */
+
 const createReview = async (
     reviewerId: string,
     payload: Partial<IReview>
@@ -71,7 +60,7 @@ const createReview = async (
     session.startTransaction();
 
     try {
-        // 1. VALIDATE REVIEWER EXISTS
+  
         const reviewer = await User.findById(reviewerId).session(session);
         if (!reviewer) {
             throw new AppError(
@@ -80,7 +69,6 @@ const createReview = async (
             );
         }
 
-        // 2. VALIDATE HOST EXISTS
         if (!payload.host) {
             throw new AppError(
                 httpStatus.BAD_REQUEST,
@@ -96,7 +84,6 @@ const createReview = async (
             );
         }
 
-        // 3. PREVENT SELF-REVIEW
         if (reviewerId === payload.host.toString()) {
             throw new AppError(
                 httpStatus.BAD_REQUEST,
@@ -104,7 +91,7 @@ const createReview = async (
             );
         }
 
-        // 4. VALIDATE TRAVEL PLAN EXISTS
+
         if (!payload.travelPlan) {
             throw new AppError(
                 httpStatus.BAD_REQUEST,
@@ -120,7 +107,7 @@ const createReview = async (
             );
         }
 
-        // 5. VALIDATE TRAVEL IS COMPLETED (endDate has passed)
+      
         const currentDate = new Date();
         if (travelPlan.endDate > currentDate) {
             throw new AppError(
@@ -129,7 +116,7 @@ const createReview = async (
             );
         }
 
-        // 6. VALIDATE THAT REVIEWER WAS AN ACCEPTED MEMBER IN THE TRAVEL
+     
         const travelRequest = await TravelRequest.findOne({
             travelPlan: payload.travelPlan,
             requester: reviewerId,
@@ -143,7 +130,6 @@ const createReview = async (
             );
         }
 
-        // 7. VALIDATE THAT HOST WAS THE ACTUAL HOST OF THE TRAVEL PLAN
         if (travelPlan.user.toString() !== payload.host.toString()) {
             throw new AppError(
                 httpStatus.BAD_REQUEST,
@@ -151,7 +137,7 @@ const createReview = async (
             );
         }
 
-        // 8. CHECK FOR DUPLICATE REVIEW (one review per travel per reviewer)
+      
         const existingReview = await Review.findOne({
             travelPlan: payload.travelPlan,
             reviewer: reviewerId,
@@ -164,7 +150,7 @@ const createReview = async (
             );
         }
 
-        // 9. VALIDATE RATING
+        
         if (!payload.rating || payload.rating < 1 || payload.rating > 5) {
             throw new AppError(
                 httpStatus.BAD_REQUEST,
@@ -187,11 +173,11 @@ const createReview = async (
             );
         }
 
-        // 11. CREATE THE REVIEW
+
         const review = await Review.create(
             [
                 {
-                    host: payload.host,
+                    host: travelPlan.user,
                     reviewer: reviewerId,
                     rating: payload.rating,
                     comment: payload.comment.trim(),
@@ -210,10 +196,9 @@ const createReview = async (
 
         const newReview = review[0];
 
-        // 12. UPDATE HOST'S AVERAGE RATING
+   
         await calculateAndUpdateAverageRating(payload.host.toString(), session);
 
-        // 13. ADD REVIEW REFERENCES TO USER PROFILES
         await User.findByIdAndUpdate(
             reviewerId,
             { $addToSet: { reviewsWritten: newReview._id } },
@@ -229,7 +214,6 @@ const createReview = async (
         await session.commitTransaction();
         session.endSession();
 
-        // Return populated review
         const populatedReview = await Review.findById(newReview._id)
             .populate("host", "name profileImage averageRating")
             .populate("reviewer", "name profileImage")
