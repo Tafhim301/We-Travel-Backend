@@ -109,7 +109,7 @@ export const createTravelPlan = async (
 
 const getTravelPlans = async (query: Record<string, string>) => {
   const queryBuilder = new QueryBuilder(
-    TravelPlan.find().populate("destination").populate("user"),
+    TravelPlan.find().populate("user").populate("destination"),
     query
   );
 
@@ -150,7 +150,7 @@ const getAllTravelPlansAdmin = async (query: Record<string, string>) => {
 
 
 const getTravelPlanById = async (planId: string) => {
-  const plan = await TravelPlan.findById(planId).populate("user");
+  const plan = await TravelPlan.findById(planId).populate("user").populate("destination");
   if (!plan) throw new AppError(404, "TravelPlan not found");
   return plan;
 };

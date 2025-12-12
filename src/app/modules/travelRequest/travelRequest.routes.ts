@@ -23,7 +23,7 @@ router.get(
 
 router.post(
   "/",
-  checkAuth(Role.USER, Role.ADMIN),
+  checkAuth(Role.USER),
   travelRequestController.createTravelRequest
 );
 
