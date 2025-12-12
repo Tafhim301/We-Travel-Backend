@@ -51,7 +51,7 @@ const getMe = catchAsync(
 const updateProfile = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.user.userId;
-    const payload = req.body
+    const payload = req.body.body
 
     const result = await userServices.updateProfile(userId,payload,req.file);
 

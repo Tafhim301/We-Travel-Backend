@@ -60,7 +60,7 @@ const createReview = async (
     session.startTransaction();
 
     try {
-  
+
         const reviewer = await User.findById(reviewerId).session(session);
         if (!reviewer) {
             throw new AppError(
@@ -107,7 +107,7 @@ const createReview = async (
             );
         }
 
-      
+
         const currentDate = new Date();
         if (travelPlan.endDate > currentDate) {
             throw new AppError(
@@ -116,7 +116,7 @@ const createReview = async (
             );
         }
 
-     
+
         const travelRequest = await TravelRequest.findOne({
             travelPlan: payload.travelPlan,
             requester: reviewerId,
@@ -137,7 +137,7 @@ const createReview = async (
             );
         }
 
-      
+
         const existingReview = await Review.findOne({
             travelPlan: payload.travelPlan,
             reviewer: reviewerId,
@@ -150,7 +150,7 @@ const createReview = async (
             );
         }
 
-        
+
         if (!payload.rating || payload.rating < 1 || payload.rating > 5) {
             throw new AppError(
                 httpStatus.BAD_REQUEST,
@@ -196,8 +196,8 @@ const createReview = async (
 
         const newReview = review[0];
 
-   
-        await calculateAndUpdateAverageRating(payload.host.toString(), session);
+
+        await calculateAndUpdateAverageRating(travelPlan.user.toString(), session);
 
         await User.findByIdAndUpdate(
             reviewerId,
@@ -227,9 +227,7 @@ const createReview = async (
     }
 };
 
-/**
- * Get all reviews for a specific host with pagination and filtering
- */
+
 const getReviewsForHost = async (hostId: string, query: Record<string, string>) => {
     // Validate host exists
     const host = await User.findById(hostId);
