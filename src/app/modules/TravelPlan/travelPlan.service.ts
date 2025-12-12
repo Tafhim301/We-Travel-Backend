@@ -128,6 +128,25 @@ const getTravelPlans = async (query: Record<string, string>) => {
   return { data: plans, meta };
 };
 
+const getAllTravelPlansAdmin = async (query: Record<string, string>) => {
+  const queryBuilder = new QueryBuilder(
+    TravelPlan.find().populate("destination").populate("user"),
+    query
+  );
+
+  const plans = await queryBuilder
+    .search(["title"])
+    .filter() 
+    .fields() 
+    .sort() 
+    .paginate() 
+    .build();
+
+  const meta = await queryBuilder.getMeta();
+
+  return { data: plans, meta };
+};
+
 
 
 const getTravelPlanById = async (planId: string) => {
@@ -257,6 +276,7 @@ const deleteTravelPlan = async (planId: string,userId:string) => {
 export const travelPlanServices = {
   createTravelPlan,
   getTravelPlans,
+  getAllTravelPlansAdmin,
   getTravelPlanById,
   updateTravelPlan,
   deleteTravelPlan,

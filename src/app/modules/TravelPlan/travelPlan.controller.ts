@@ -39,6 +39,16 @@ const getTravelPlans = catchAsync(async (req: Request, res: Response, next: Next
   });
 });
 
+const getAllTravelPlansAdmin = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  const result = await travelPlanServices.getAllTravelPlansAdmin(req.query as Record<string, string>);
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "All TravelPlans (admin)",
+    ...result,
+  });
+});
+
 const getTravelPlanById = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const planId = req.params.id;
   const result = await travelPlanServices.getTravelPlanById(planId);
@@ -109,6 +119,7 @@ const  myTravelPlans = catchAsync(async (req: Request, res: Response, next: Next
 export const travelPlanController = {
   createTravelPlan,
   getTravelPlans,
+  getAllTravelPlansAdmin,
   getTravelPlanById,
   updateTravelPlan,
   deleteTravelPlan,

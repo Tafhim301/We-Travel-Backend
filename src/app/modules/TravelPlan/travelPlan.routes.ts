@@ -22,6 +22,7 @@ router.post(
 );
 
 router.get("/", travelPlanController.getTravelPlans);
+router.get("/all-plans", checkAuth(Role.ADMIN), travelPlanController.getAllTravelPlansAdmin);
 router.get("/my-plans", checkAuth(Role.USER), travelPlanController.myTravelPlans);
 router.get("/:id", travelPlanController.getTravelPlanById);
 

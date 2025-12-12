@@ -91,10 +91,7 @@ const getAdminDashboardOverview = async (opts?: { startDate?: string; endDate?: 
     };
 };
 
-/**
- * PAYMENT & BUSINESS ANALYTICS
- * Total payments, pending, successful, failed, cancelled + revenue metrics
- */
+
 const getPaymentAndRevenueAnalytics = async (opts?: { startDate?: string; endDate?: string }) => {
     const start = toDate(opts?.startDate);
     const end = toDate(opts?.endDate);
@@ -167,10 +164,10 @@ const getPaymentAndRevenueAnalytics = async (opts?: { startDate?: string; endDat
         totalRevenue: totalRevenueAmount,
         averagePaymentAmount: avgPayment,
         paymentStatusBreakdown: {
-            pending: statusBreakdown.pending,
-            success: statusBreakdown.success,
-            failed: statusBreakdown.failed,
-            cancelled: statusBreakdown.cancelled,
+            pending: statusBreakdown.pending || statusBreakdown.PENDING,
+            success: statusBreakdown.PAID,
+            failed: statusBreakdown.FAILED,
+            cancelled: statusBreakdown.CANCELLED
         },
         paymentStatusPercentage: {
             pendingPercentage,
